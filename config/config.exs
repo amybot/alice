@@ -28,3 +28,8 @@ use Mix.Config
 # here (which is why it is important to import them last).
 #
 #     import_config "#{Mix.env}.exs"
+
+config :sentry,
+  dsn: System.get_env("SENTRY_DSN"),
+  included_environments: ["prod"],
+  environment_name: System.get_env("ENV_NAME") || "dev"

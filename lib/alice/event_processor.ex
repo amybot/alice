@@ -41,7 +41,11 @@ defmodule Alice.EventProcessor do
     unless data == :undefined do
       # %{"t" => type, "d" => data}
       event = data |> Poison.decode!
-      process_event event["t"], event["d"]
+      try do
+        process_event event["t"], event["d"]
+      rescue
+        e -> Sentry.capture_exception e, [stacktrace: System.stacktrace()]
+      end
     end
   end
 
