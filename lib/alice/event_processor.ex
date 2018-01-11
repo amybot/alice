@@ -6,7 +6,7 @@ defmodule Alice.EventProcessor do
 
   import Alice.Cmd
 
-  @prefix "!"
+  @prefix "adev!"
 
   defmacro is_cache(type) do
     quote do
