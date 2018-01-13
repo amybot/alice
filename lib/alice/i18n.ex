@@ -45,6 +45,15 @@ defmodule Alice.I18n do
       unless is_nil tln do
         {:reply, tln, state}
       else
+        # Fall back to en if no translation available
+        unless lang == "en" do
+          tln = get_in state["en"], keys
+          unless is_nil tln do
+            {:reply, tln, state}
+          else
+            {:reply, @unknown_translation, state}
+          end
+        end
         {:reply, @unknown_translation, state}
       end
     else
