@@ -7,7 +7,7 @@ RUN mkdir /app
 WORKDIR /app
 
 RUN apk update
-RUN apk add git curl libcurl
+RUN apk add git curl libcurl yaml-dev
 
 COPY . /app
 

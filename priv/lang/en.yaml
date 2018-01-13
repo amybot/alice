@@ -1,0 +1,50 @@
+# Main translation file for amybot. 
+# en is the default locale, and as such this file will always be up-to-date
+
+# General messages that AREN'T command output.
+message:
+  no-ping-everyone: "Nice try."
+
+# Command i18n
+command:
+  # Descriptions for commands
+  desc:
+    # Emote commands
+    emote:
+      bap: "Bap someone on the face."
+      chew: "Chew on someone."
+      cookie: "Give someone a cookie."
+      hug: "Hug someone."
+      lick: "Lick someone."
+      nom: "Nom on someone."
+      poke: "Poke someone."
+      prod: "Prod someone"
+      shoot: "Shoot someone."
+      stab: "Stab someone."
+      tickle: "Tickle someone."
+  # Available parameters:
+  # $sender - person who sent the command
+  # $target - person who was targeted
+  emotes:
+    bap: "**$target**, you were just bapped by **$sender**!"
+    chew: "**$target**, you were just chewed on by **$sender**!"
+    cookie: "**$target**, you were just given a cookie by **$sender**! How sweet!"
+    hug: "**$target**, you were just hugged by **$sender**! Awwww!"
+    lick: "**$target**, you were just licked by **$sender**! Ewww!"
+    nom: "**$target**, you were just nommed on by **$sender**!"
+    poke: "**$target**, you were just poked by **$sender**! Hey!"
+    prod: "**$target**, you were just prodded by **$sender**! Hey!"
+    shoot: "**$target**, you were just shot by **$sender**! Quick, call an ambulance!"
+    stab: "**$target**, you were just stabbed by **$sender**! Quick, call an ambulance!"
+    tickle: "**$target**, you were just tickled by **$sender**!"
+
+# DO NOT REMOVE OR EDIT THIS LINE
+# This is required for tests to pass.
+test: "test"
+
+# DO NOT REMOVE OR EDIT THIS BLOCK
+# This is required for tests to pass
+test-block:
+  one: "1"
+  test:
+    two: "2"

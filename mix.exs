@@ -27,6 +27,10 @@ defmodule Alice.Mixfile do
       {:cowboy, "~> 1.1"},
       {:poison, "~> 3.1"},
       {:sentry, "~> 6.0.5"},
+      {:mongodb, ">= 0.0.0"},
+      {:poolboy, ">= 0.0.0"},
+      {:annotatable, "~> 0.1.2"},
+      {:fast_yaml, "~> 1.0"},
     ]
   end
 end

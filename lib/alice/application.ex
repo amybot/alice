@@ -7,10 +7,19 @@ defmodule Alice.Application do
   require Logger
 
   def start(_type, _args) do
+    {:ok, _agent_pid} = Alice.CommandState.start_link
     # List all child processes to be supervised
     children = [
       # Starts a worker by calling: Alice.Worker.start_link(arg)
       # {Alice.Worker, arg},
+      {Alice.I18n, []},
+      {Mongo, [
+          name: :mongo, 
+          database: System.get_env("CACHE_DATABASE"), 
+          pool: DBConnection.Poolboy, 
+          hostname: System.get_env("MONGO_IP"), 
+          port: "27017"
+        ]},
       {Lace.Redis, %{
           redis_ip: System.get_env("REDIS_IP"), redis_port: 6379, pool_size: 100, redis_pass: System.get_env("REDIS_PASS")
         }},
@@ -21,15 +30,25 @@ defmodule Alice.Application do
         ])
     ]
 
+    spawn fn -> 
+        Logger.info "[APP] Waiting for everything to be up..."
+        # lol
+        :timer.sleep 1000
+
+        Alice.CommandState.add_commands Alice.Cmd.Test, Alice.Cmd.Test.annotations()
+        Alice.CommandState.add_commands Alice.Cmd.Emote, Alice.Cmd.Emote.annotations()
+
+        Logger.info "[APP] Fully up!"
+
+        # Start the processing task
+        Task.async fn -> Alice.EventProcessor.process() end
+      end
+
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Alice.Supervisor]
     sup_res = Supervisor.start_link(children, opts)
 
-    # Start the processing task
-    Task.async fn -> Alice.EventProcessor.process() end
-
-    Logger.info "Started!"
     sup_res
   end
 

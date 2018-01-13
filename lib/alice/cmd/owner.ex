@@ -1,10 +1,12 @@
 defmodule Alice.Cmd.Test do
-  @behaviour Alice.Cmd
+  use Annotatable, [:command]
 
+  @command %{name: "test", desc: "command.desc.owner.test"}
   def command("test", args, _argstr, ctx) do
     Emily.create_message ctx["channel_id"], "Args: #{inspect args}"
   end
 
+  @command %{name: "eval", desc: "command.desc.owner.eval"}
   def command("eval", _args, argstr, ctx) do
     if ctx["author"]["id"] == 128316294742147072 do
       try do

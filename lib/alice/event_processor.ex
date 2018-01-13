@@ -2,12 +2,6 @@ defmodule Alice.EventProcessor do
   alias Lace.Redis
   require Logger
 
-  import Alice.Cmd.Test
-
-  import Alice.Cmd
-
-  @prefix "adev!"
-
   defmacro is_cache(type) do
     quote do
       unquote(type) in [
@@ -31,8 +25,8 @@ defmodule Alice.EventProcessor do
   def process do
     spawn fn -> get_event() end
     # Don't abuse redis too much
-    # Artificially limit us to 100/s throughput
-    Process.sleep 10
+    # Artificially limit us to 1000/s throughput
+    Process.sleep 1
     process()
   end
 
@@ -50,30 +44,7 @@ defmodule Alice.EventProcessor do
   end
 
   defp process_event(type, data) when type == "MESSAGE_CREATE" do
-    ctx = data
-    msg = ctx["content"]
-
-    # TODO: Remove this, testing-only~
-    if ctx["author"]["id"] == 128316294742147072 do
-      words = String.split msg, ~R/\s+/, [parts: 2, trim: true]
-      cmd = words |> List.first
-      unless is_nil cmd do
-        if String.starts_with?(cmd, @prefix) do
-          cmd_name = cmd |> String.slice(1..2048)
-          argstr = if length(words) > 1 do
-            words |> List.last
-          else
-            ""
-          end
-          args = if length(words) > 1 do
-            words |> List.last |> String.split(~R/\s+/, [trim: true])
-          else
-            []
-          end
-          command(cmd_name, args, argstr, ctx)
-        end
-      end
-    end
+    Alice.Command.process_message data
   end
 
   defp process_event(type, data) when is_cache(type) do

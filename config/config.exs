@@ -29,6 +29,8 @@ use Mix.Config
 #
 #     import_config "#{Mix.env}.exs"
 
+config :logger, level: :info
+
 config :sentry,
   dsn: System.get_env("SENTRY_DSN"),
   included_environments: ["prod"],
