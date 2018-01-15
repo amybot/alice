@@ -15,17 +15,23 @@ defmodule Alice.I18n do
     Logger.info "[I18N] #{inspect length(files)} translation file(s) available"
 
     lang = files |> Enum.reduce(%{}, fn(file, l) -> 
-        locale = List.first(String.split(file, ".", parts: 2))
-        Logger.info "[I18N] Loading locale: #{locale}"
-        {:ok, kl} = :fast_yaml.decode_from_file "priv/lang/en.yaml", plain_as_atom: true
-        # It comes as [[key: value]] for w/e reason. fast_yaml plz
-        tln = kl
-              |> List.first
-              |> Enum.reduce(%{}, fn({key, value}, acc) -> 
-                  Map.put acc, key, value
-                end)
-        
-        Map.put l, locale, tln
+        split = String.split(file, ".", parts: 2)
+        locale = List.first(split)
+        if List.last(split) == "yaml" do
+          Logger.info "[I18N] Loading locale: #{locale} from #{file}"
+          {:ok, kl} = :fast_yaml.decode_from_file "priv/lang/#{file}", plain_as_atom: true
+          # It comes as [[key: value]] for w/e reason. fast_yaml plz
+          tln = kl
+                |> List.first
+                |> Enum.reduce(%{}, fn({key, value}, acc) -> 
+                    Map.put acc, key, value
+                  end)
+          
+          Map.put l, locale, tln
+        else
+          Logger.info "Ignoring invalid localization file: #{file}"
+          l
+        end
       end)
 
     {:ok, lang}
@@ -33,6 +39,12 @@ defmodule Alice.I18n do
 
   def translate(lang, key) do
     GenServer.call __MODULE__, {:translate, lang, key}
+  end
+
+  def missing_arg(lang, cmd, args) when is_binary(cmd) and is_binary(args) do
+    msg = GenServer.call __MODULE__, {:translate, lang, "message.missing-arg"}
+    msg |> String.replace("$command", cmd)
+        |> String.replace("$args", args)
   end
 
   def handle_call({:translate, lang, key}, _from, state) do

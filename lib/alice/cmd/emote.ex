@@ -1,6 +1,9 @@
 defmodule Alice.Cmd.Emote do
   use Annotatable, [:command]
 
+  import Alice.Util
+  import Emily.Embed
+
   @command [
     %{name: "bap", desc: "command.desc.emote.bap"},
     %{name: "chew", desc: "command.desc.emote.chew"},
@@ -15,13 +18,23 @@ defmodule Alice.Cmd.Emote do
     %{name: "tickle", desc: "command.desc.emote.tickle"},
   ]
   def emote(name, args, argstr, ctx) do
-    unless ctx["mention_everyone"] 
-        or String.contains?(argstr, "@everyone") 
-        or String.contains?(argstr, "@here") do
-      res = "command.emote.#{name}"
-      Emily.create_message ctx["channel_id"], res
+    if argstr == "" or length(args) == 0 do
+      Emily.create_message ctx["channel_id"], [content: nil, 
+          embed: error(ctx, Alice.I18n.missing_arg("en", name, "target"))]
     else
-      Emily.create_message ctx["channel_id"], Alice.I18n.translate("en", "message.no-ping-everyone")
+      unless ctx["mention_everyone"] 
+          or String.contains?(argstr, "@everyone") 
+          or String.contains?(argstr, "@here") do
+        response = Alice.I18n.translate("en", "command.emote.#{name}")
+                   |> String.replace("$sender", ctx["author"]["username"])
+                   |> String.replace("$target", argstr)
+        e = ctx
+            |> ctx_embed
+            |> title(response)
+        Emily.create_message ctx["channel_id"], [content: nil, embed: e]
+      else
+        Emily.create_message ctx["channel_id"], [content: nil, embed: error(ctx, Alice.I18n.translate("en", "message.no-ping-everyone"))]
+      end
     end
   end
 end

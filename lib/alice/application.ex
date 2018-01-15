@@ -13,6 +13,8 @@ defmodule Alice.Application do
       # Starts a worker by calling: Alice.Worker.start_link(arg)
       # {Alice.Worker, arg},
       {Alice.I18n, []},
+      {Alice.ReadRepo, []},
+      {Alice.WriteRepo, []},
       {Mongo, [
           name: :mongo, 
           database: System.get_env("CACHE_DATABASE"), 
@@ -30,24 +32,26 @@ defmodule Alice.Application do
         ])
     ]
 
+    # See https://hexdocs.pm/elixir/Supervisor.html
+    # for other strategies and supported options
+    opts = [strategy: :one_for_one, name: Alice.Supervisor]
+    sup_res = Supervisor.start_link(children, opts)
+
     spawn fn -> 
         Logger.info "[APP] Waiting for everything to be up..."
         # lol
         :timer.sleep 1000
 
-        Alice.CommandState.add_commands Alice.Cmd.Test, Alice.Cmd.Test.annotations()
-        Alice.CommandState.add_commands Alice.Cmd.Emote, Alice.Cmd.Emote.annotations()
+        Alice.CommandState.add_commands Alice.Cmd.Owner
+        Alice.CommandState.add_commands Alice.Cmd.Emote
+        Alice.CommandState.add_commands Alice.Cmd.Utility
+        Alice.CommandState.add_commands Alice.Cmd.Fun
 
         Logger.info "[APP] Fully up!"
 
         # Start the processing task
         Task.async fn -> Alice.EventProcessor.process() end
       end
-
-    # See https://hexdocs.pm/elixir/Supervisor.html
-    # for other strategies and supported options
-    opts = [strategy: :one_for_one, name: Alice.Supervisor]
-    sup_res = Supervisor.start_link(children, opts)
 
     sup_res
   end

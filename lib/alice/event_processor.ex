@@ -53,6 +53,6 @@ defmodule Alice.EventProcessor do
   end
 
   defp process_event(type, data) do
-    #Logger.info "Got unknown event: #{inspect event}!"
+    Logger.debug "Got unknown event: #{inspect type} with data #{inspect data}"
   end
 end

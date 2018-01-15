@@ -15,6 +15,7 @@ defmodule Alice.Command do
   function.
   """
 
+  import Alice.Util
   require Logger
 
   @prefix "amy@"
@@ -44,13 +45,25 @@ defmodule Alice.Command do
           unless is_nil match do
             invoke = match[:invoke]
             unless is_nil invoke do
-              invoke.(cmd_name, args, argstr, ctx)
+              try do
+                invoke.(cmd_name, args, argstr, ctx)
+              rescue
+                e -> 
+                  # TODO: Make this log into Sentry instead
+                  err = ctx
+                        |> error(
+                          """
+                          ```Elixir
+                          #{Exception.format(:error, e)}
+                          ```
+                          """
+                          )
+                  Emily.create_message ctx["channel_id"], [content: nil, embed: err]
+              end
             else
               Logger.warn "Caught nil invoke for #{cmd_name}!"
             end
           end
-
-          #command(cmd_name, args, argstr, ctx)
         end
       end
     end

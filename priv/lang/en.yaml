@@ -4,6 +4,11 @@
 # General messages that AREN'T command output.
 message:
   no-ping-everyone: "Nice try."
+  # Available parameters:
+  # $command - The command's name
+  # $args - The arguments required. Is given as a list, like
+  #         "arg1, arg2, arg3"
+  missing-arg: "$command requires the following argument(s): $args"
 
 # Command i18n
 command:
@@ -22,21 +27,35 @@ command:
       shoot: "Shoot someone."
       stab: "Stab someone."
       tickle: "Tickle someone."
+    owner:
+      eval: ""
+      test: ""
+    fun:
+      sb: "Spongebob meme text."
+      evil: "For when you need to show true evil."
+    util:
+      ping: "pong! Check if amybot is responding."
+      help: "Helpful info about amybot."
+      invite: "Get the link to invite amybot to your server."
   # Available parameters:
   # $sender - person who sent the command
   # $target - person who was targeted
-  emotes:
-    bap: "**$target**, you were just bapped by **$sender**!"
-    chew: "**$target**, you were just chewed on by **$sender**!"
-    cookie: "**$target**, you were just given a cookie by **$sender**! How sweet!"
-    hug: "**$target**, you were just hugged by **$sender**! Awwww!"
-    lick: "**$target**, you were just licked by **$sender**! Ewww!"
-    nom: "**$target**, you were just nommed on by **$sender**!"
-    poke: "**$target**, you were just poked by **$sender**! Hey!"
-    prod: "**$target**, you were just prodded by **$sender**! Hey!"
-    shoot: "**$target**, you were just shot by **$sender**! Quick, call an ambulance!"
-    stab: "**$target**, you were just stabbed by **$sender**! Quick, call an ambulance!"
-    tickle: "**$target**, you were just tickled by **$sender**!"
+  emote:
+    bap: ":fist: **$target**, you were just bapped by **$sender**!"
+    chew: ":blobnom: **$target**, **$sender** just chewed on you! Ow!"
+    cookie: ":cookie: **$target**, you were just given a cookie by **$sender**! How sweet!"
+    hug: ":hugging: **$target**, you were just hugged by **$sender**! Awwww!"
+    lick: ":stuck_out_tongue: **$target**, you were just licked by **$sender**! Ewww!"
+    nom: ":blobnom: **$target**, you were just nommed on by **$sender**!"
+    poke: ":point_right: **$target**, **$sender** poked you! Hey!"
+    prod: ":point_right: **$target**, **$sender** prodded you! Hey!"
+    shoot: ":gun: **$target**, you were just shot by **$sender**! Quick, call an ambulance!"
+    stab: ":knife: **$target**, you were just stabbed by **$sender**! Quick, call an ambulance!"
+    tickle: ":open_hands: **$target**, you were just tickled by **$sender**!"
+
+# Don't copy anything past this line
+
+#######################################################################################################################
 
 # DO NOT REMOVE OR EDIT THIS LINE
 # This is required for tests to pass.

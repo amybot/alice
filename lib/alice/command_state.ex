@@ -11,7 +11,12 @@ defmodule Alice.CommandState do
     Agent.get(CommandState, fn state -> state[cmd] end)
   end
 
-  def add_commands(mod, annotations) do
+  defp get_annotations(mod) do
+    apply mod, :annotations, []
+  end
+
+  def add_commands(mod) do #, annotations) do
+    annotations = get_annotations mod
     functions = Map.keys annotations
 
     for f <- functions do
@@ -35,14 +40,15 @@ defmodule Alice.CommandState do
 
   defp update_cmd(mod, f, val) do
     data = %{
-    name: val[:name],
-    desc: val[:desc],
-    invoke: fn(name, args, argstr, ctx) -> 
-        apply mod, f, [name, args, argstr, ctx]
-      end
+      name: val[:name],
+      desc: val[:desc],
+      invoke: fn(name, args, argstr, ctx) -> 
+          apply mod, f, [name, args, argstr, ctx]
+        end,
+      owner: val[:owner] || false
     }
     Agent.update(CommandState, fn state -> 
-        Logger.info "[CMD] Mapping command #{inspect val[:name]} -> #{inspect mod}.#{inspect Atom.to_string(f)}/4"
+        Logger.info "[CMD] Mapping command #{inspect val[:name]} -> #{inspect mod}.#{Atom.to_string(f)}/4"
         Map.put state, val[:name], data
       end)
   end

@@ -31,6 +31,8 @@ defmodule Alice.Mixfile do
       {:poolboy, ">= 0.0.0"},
       {:annotatable, "~> 0.1.2"},
       {:fast_yaml, "~> 1.0"},
+      {:ecto, "~> 2.0"},
+      {:postgrex, "~> 0.11"}
     ]
   end
 end
