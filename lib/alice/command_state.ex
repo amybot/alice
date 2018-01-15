@@ -48,7 +48,7 @@ defmodule Alice.CommandState do
       owner: val[:owner] || false
     }
     Agent.update(CommandState, fn state -> 
-        Logger.info "[CMD] Mapping command #{inspect val[:name]} -> #{inspect mod}.#{Atom.to_string(f)}/4"
+        Logger.debug "[CMD] Mapping command #{inspect val[:name]} -> #{inspect mod}.#{Atom.to_string(f)}/4"
         Map.put state, val[:name], data
       end)
   end
