@@ -49,7 +49,12 @@ defmodule Alice.EventProcessor do
 
   defp process_event(type, data) when is_cache(type) do
     Logger.debug "Got cache event: #{inspect type} with data #{inspect data}"
-    Redis.q ["RPUSH", System.get_env("CACHE_QUEUE"), Poison.encode!(%{"t" => type, "d" => data})]
+    #Redis.q ["RPUSH", System.get_env("CACHE_QUEUE"), Poison.encode!(%{"t" => type, "d" => data})]
+    try do
+      Alice.Cache.process_event %{"t" => type, "d" => data}
+    rescue
+      e -> Sentry.capture_exception e, [stacktrace: System.stacktrace()]
+    end
   end
 
   defp process_event(type, data) do

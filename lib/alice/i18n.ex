@@ -38,6 +38,7 @@ defmodule Alice.I18n do
   end
 
   def translate(lang, key) do
+    Logger.debug "Got request to translate #{key} into locale #{lang}"
     GenServer.call __MODULE__, {:translate, lang, key}
   end
 

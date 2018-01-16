@@ -37,6 +37,10 @@ command:
       ping: "pong! Check if amybot is responding."
       help: "Helpful info about amybot."
       invite: "Get the link to invite amybot to your server."
+    currency:
+      balance: "Check your user balance."
+      daily: "Get some money once a day."
+      baltop: "See the 10 richest users."
   # Available parameters:
   # $sender - person who sent the command
   # $target - person who was targeted
@@ -52,6 +56,17 @@ command:
     shoot: ":gun: **$target**, you were just shot by **$sender**! Quick, call an ambulance!"
     stab: ":knife: **$target**, you were just stabbed by **$sender**! Quick, call an ambulance!"
     tickle: ":open_hands: **$target**, you were just tickled by **$sender**!"
+  currency:
+    # Available parameters:
+    # $balance - the user's balance
+    balance: "You have $balance:white_flower:."
+    daily:
+      # Available parameters:
+      # $amount - amount collected daily
+      success: "You collect your daily $amount:white_flower:."
+      # Available parameters:
+      # $time - formatting time string until it's possible again
+      failure: "You're doing that too fast! Try again in $time."
 
 # Don't copy anything past this line
 

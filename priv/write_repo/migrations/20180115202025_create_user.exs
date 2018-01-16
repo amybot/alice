@@ -5,7 +5,7 @@ defmodule Alice.WriteRepo.Migrations.CreateUser do
 
   use Ecto.Migration
 
-  def change do
+  def up do
     create table(:amybot_users, primary_key: false) do
       add :user_id, :decimal, primary_key: true
       add :balance, :integer

@@ -1,10 +1,24 @@
 defmodule Alice.Util do
   @moduledoc """
-  Utilities for commands
+  Utilities for commands and stuff.
   """
 
   import Emily.Embed
   require Logger
+
+  @doc """
+  Returns the current time in milliseconds
+  """
+  def now_ms do
+    :os.system_time :millisecond
+  end
+
+  @doc """
+  Returns the current time in seconds
+  """
+  def now_s do
+    :os.system_time :second
+  end
 
   def avatar(user) do
     "https://cdn.discordapp.com/avatars/#{user["id"]}/#{user["avatar"]}.png"

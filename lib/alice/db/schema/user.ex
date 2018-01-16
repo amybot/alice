@@ -20,12 +20,17 @@ defmodule Alice.User do
     |> validate_number(:global_xp, greater_than_or_equal_to: 0)
   end
 
+  def get_base_changeset(entity) do
+    changeset get_base_user(entity)
+  end
+
   ################
   # External API #
   ################
 
-  def get_base_changeset(entity) do
-    changeset get_base_user(entity)
+  def get_id_only_user(entity) do
+    user = %Alice.User{}
+    %{user | user_id: entity["id"]}
   end
 
   def get_base_user(entity) do

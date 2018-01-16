@@ -14,6 +14,7 @@ defmodule Alice.Application do
       # {Alice.Worker, arg},
       Alice.ReadRepo,
       Alice.WriteRepo,
+      {Alice.I18n, []},
       {Mongo, [
           name: :mongo, 
           database: System.get_env("CACHE_DATABASE"), 
@@ -28,13 +29,18 @@ defmodule Alice.Application do
       Plug.Adapters.Cowboy.child_spec(:http, Alice.Router, [], [
           dispatch: dispatch(),
           port: get_port(),
-        ])
+        ]),
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Alice.Supervisor]
-    sup_res = Supervisor.start_link(children, opts)
+    {:ok, sup_res} = Supervisor.start_link(children, opts)
+
+    Logger.info "[APP] Waiting for everything to be up..."
+    :timer.sleep 1000
+    Logger.info "[APP] Everything: "
+    Logger.info "[APP] #{inspect Supervisor.which_children(sup_res), pretty: true} "
 
     Logger.info "[DB] Making database if needed..."
     db_conf = Application.get_env(:alice, Alice.WriteRepo)
@@ -57,9 +63,6 @@ defmodule Alice.Application do
     migration_res = Ecto.Migrator.run(Alice.WriteRepo, Application.app_dir(:alice, "priv/write_repo/migrations"), :up, [all: true])
     Logger.info "[DB] Migration result: #{inspect migration_res}"
 
-    Logger.info "[APP] Waiting for everything to be up..."
-    :timer.sleep 1000
-
     Alice.CommandState.add_commands Alice.Cmd.Owner
     Alice.CommandState.add_commands Alice.Cmd.Emote
     Alice.CommandState.add_commands Alice.Cmd.Utility
@@ -71,7 +74,7 @@ defmodule Alice.Application do
     # Start the processing task
     Task.async fn -> Alice.EventProcessor.process() end
 
-    sup_res
+    {:ok, sup_res}
   end
 
   defp get_port do
