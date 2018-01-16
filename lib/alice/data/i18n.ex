@@ -1,4 +1,5 @@
 defmodule Alice.I18n do
+  # TODO: Just convert this to an Agent
   use GenServer
   require Logger
 
