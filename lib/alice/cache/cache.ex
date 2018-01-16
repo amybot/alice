@@ -29,7 +29,6 @@ defmodule Alice.Cache do
 
   ##########################################################
   # LIST OF THINGS TO DO                                   #
-  # - Map channels <-> guilds                              #
   # - In-process fast lookup table for channel -> guild id #
   # - Real emote handling                                  #
   # - ???                                                  #
@@ -41,6 +40,25 @@ defmodule Alice.Cache do
       :undefined -> nil
       _ -> user |> Poison.decode!
     end
+  end
+
+  @doc """
+  Convert a snowflake into a channel object
+  """
+  def get_channel(id) do
+    Mongo.find_one :mongo, @channel_cache, %{"id": id}, pool: DBConnection.Poolboy
+  end
+
+  def is_nsfw(id) do
+    get_channel(id)["nsfw"] || false
+  end
+
+  def channel_to_guild_id(channel) when is_map(channel) do
+    get_channel channel["id"]
+  end
+
+  def count_guilds do
+    Mongo.count :mongo, @guild_cache, %{}, pool: DBConnection.Poolboy
   end
 
   ###############################################################################

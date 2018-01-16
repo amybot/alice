@@ -9,6 +9,7 @@ message:
   # $args - The arguments required. Is given as a list, like
   #         "arg1, arg2, arg3"
   missing-arg: "$command requires the following argument(s): $args"
+  no-nsfw: "You can't use an NSFW command in a non-NSFW channel!"
 
 # Command i18n
 command:
@@ -33,6 +34,11 @@ command:
     fun:
       sb: "Spongebob meme text."
       evil: "For when you need to show true evil."
+      cat: "Get a random cat image."
+      dog: "Get a random dog image."
+      catgirl: "Get a random catgirl image. NSFW option only works in NSFW channels."
+      rubeface: "See a RWBY meme."
+      fatsquare: "It's a square. It's fat. The greatest emote of all time."
     util:
       ping: "pong! Check if amybot is responding."
       help: "Helpful info about amybot."

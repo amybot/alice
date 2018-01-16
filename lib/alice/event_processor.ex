@@ -1,4 +1,5 @@
 defmodule Alice.EventProcessor do
+  # TODO: Port this to use :gen_event
   alias Lace.Redis
   require Logger
 
@@ -49,12 +50,16 @@ defmodule Alice.EventProcessor do
 
   defp process_event(type, data) when is_cache(type) do
     Logger.debug "Got cache event: #{inspect type} with data #{inspect data}"
+    # Note: In the original cache service, this was wrapped in try/rescue to 
+    #       let Sentry do its thing. With it here, this is covered in 
+    #       get_event/0 so we don't need to worry about it here
+    Alice.Cache.process_event %{"t" => type, "d" => data}
     #Redis.q ["RPUSH", System.get_env("CACHE_QUEUE"), Poison.encode!(%{"t" => type, "d" => data})]
-    try do
-      Alice.Cache.process_event %{"t" => type, "d" => data}
-    rescue
-      e -> Sentry.capture_exception e, [stacktrace: System.stacktrace()]
-    end
+    #try do
+    #  Alice.Cache.process_event %{"t" => type, "d" => data}
+    #rescue
+    #  e -> Sentry.capture_exception e, [stacktrace: System.stacktrace()]
+    #end
   end
 
   defp process_event(type, data) do

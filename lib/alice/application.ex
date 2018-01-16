@@ -36,7 +36,8 @@ defmodule Alice.Application do
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Alice.Supervisor]
     {:ok, sup_res} = Supervisor.start_link(children, opts)
-
+    Logger.info "[API] Starting API client..."
+    Alice.ApiClient.start()
     Logger.info "[APP] Waiting for everything to be up..."
     :timer.sleep 1000
     Logger.info "[APP] Everything: "

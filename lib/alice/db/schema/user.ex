@@ -4,8 +4,7 @@ defmodule Alice.User do
 
   @primary_key {:user_id, :decimal, autogenerate: false}
   schema "amybot_users" do
-    #field :user_id, :id
-    field :balance, :integer
+    field :balance,   :integer
     field :global_xp, :integer
   end
 

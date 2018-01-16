@@ -43,4 +43,40 @@ defmodule Alice.Cmd.Fun do
       Emily.create_message ctx["channel_id"], [content: nil, embed: embed]
     end
   end
+
+  @command [
+    %{name: "cat", desc: "command.desc.fun.cat"},
+    %{name: "dog", desc: "command.desc.fun.dog"},
+    %{name: "catgirl", desc: "command.desc.fun.catgirl"},
+    %{name: "rubeface", desc: "command.desc.fun.rubeface"},
+    %{name: "fatsquare", desc: "command.desc.fun.fatsquare"},
+  ]
+  def image(name, args, _argstr, ctx) do
+    nsfw = name == "catgirl" and length(args) > 0 and String.downcase(hd(args)) == "nsfw"
+    title = if nsfw do
+              "#{String.capitalize(name)} (NSFW)"
+            else
+              String.capitalize(name)
+            end
+    # TODO: Ewwwwwwwww
+    embed = if nsfw do
+              if Alice.Cache.is_nsfw ctx["channel_id"] do
+                url = Alice.ApiClient.image name, nsfw
+                ctx
+                |> ctx_embed
+                |> title(title)
+                |> image(url)
+              else
+                err = Alice.I18n.translate("en", "message.no-nsfw")
+                error ctx, err
+              end
+            else
+              url = Alice.ApiClient.image name, nsfw
+              ctx
+              |> ctx_embed
+              |> title(title)
+              |> image(url)
+            end
+    Emily.create_message ctx["channel_id"], [content: nil, embed: embed]
+  end
 end
