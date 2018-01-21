@@ -7,12 +7,13 @@ defmodule Alice.WriteRepo.Migrations.EmoteCache do
 
   def change do
     create table(:amybot_emote_cache, primary_key: false) do
-      add :guild_id,   :decimal, primary_key: true
-      add :emote_id,   :decimal
-      add :emote_name, :string
-      add :roles,      {:array, :decimal}
-      add :user,       
+      add :guild_id,       :decimal
+      add :id,             :decimal
+      add :name,           :string
+      add :require_colons, :boolean
+      add :managed,        :boolean
+      add :animated,       :boolean
     end
-    create index(:amybot_emote_cache, [:guild_id, :emote_id, :emote_name])
+    create index(:amybot_emote_cache, [:guild_id, :id, :name])
   end
 end

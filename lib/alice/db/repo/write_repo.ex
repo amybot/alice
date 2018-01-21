@@ -1,5 +1,6 @@
 defmodule Alice.WriteRepo do
   use Ecto.Repo, otp_app: :alice
+  import Ecto.Query
 
   ################
   # External API #
@@ -11,6 +12,12 @@ defmodule Alice.WriteRepo do
   def create_base_user(entity) do
     user = Alice.User.get_base_changeset entity
     insert! user, [on_conflict: :nothing]
+  end
+
+  def prune_emotes(guild) do
+    from("amybot_emote_cache")
+    |> where(guild_id: ^guild)
+    |> delete_all
   end
 
   def update_balance(entity, amount) do

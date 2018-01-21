@@ -117,10 +117,6 @@ defmodule Alice.Cache do
       %{"$set": raw_guild}, [pool: DBConnection.Poolboy, upsert: true])
     update_members_and_users raw_guild["id"], members
 
-    update_channels channels
-    update_roles roles
-    update_emojis emojis
-
     handle_voice_states voice_states
 
     # TODO: Do I even care about presences?
@@ -136,10 +132,17 @@ defmodule Alice.Cache do
   end
 
   defp update_emojis(emojis) do
+    emote_upd = emojis
+                |> Enum.map(fn(emote) -> 
+                    emote
+                    |> Map.delete("roles")
+                    |> Map.delete("user")
+                  end)
+                |> Enum.to_list
     #update_many @emoji_cache, emojis
     Logger.info "Updating emote cache..."
     try do
-      Alice.WriteRepo.insert_all @emoji_schema, emojis, [on_conflict: :replace_all]
+      Alice.WriteRepo.insert_all @emoji_schema, emote_upd
     rescue
       e -> Logger.warn "Update :fire: - #{inspect e}"
     end
@@ -208,8 +211,12 @@ defmodule Alice.Cache do
   @doc """
   Ensure that entities always have a guild_id attached
   """
-  defp add_id(guild, entity) do
+  defp add_id(guild, entity) when is_map(guild) do
     entity |> Map.put("guild_id", guild["id"])
+  end
+
+  defp add_id(guild, entity) when is_integer(guild) do
+    entity |> Map.put("guild_id", guild)
   end
 
   ##############################
@@ -271,8 +278,15 @@ defmodule Alice.Cache do
     Mongo.delete_one(:mongo, @channel_cache, %{"id": event["d"]["id"]}, [pool: DBConnection.Poolboy])
   end
 
-  def process_event(%{"t" => "GUILD_EMOJIS_UPDATE"} = _event) do
-    # TODO
+  def process_event(%{"t" => "GUILD_EMOJIS_UPDATE"} = event) do
+    data = event["d"]
+    guild = data["guild_id"]
+    emojis = data["emojis"]
+    Alice.WriteRepo.prune_emotes guild
+    emojis
+    |> Enum.map(fn(x) -> add_id(guild, x) end)
+    |> Enum.to_list
+    |> update_emojis
   end
 
   def process_event(%{"t" => "GUILD_MEMBER_ADD"} = event) do
