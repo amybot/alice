@@ -1,6 +1,13 @@
 # Main translation file for amybot. 
 # en is the default locale, and as such this file will always be up-to-date
 
+# How to make a translation:
+# 1. Copy this file up to the line
+# 2. Change the file name and the 'name' value
+# 3. Translate. Do NOT replace the $whatever with its equivalent in your language.
+#    For example, "$amount" should be "$amount" regardless of language. This is so
+#    that it can be used in filling in values in translation. 
+
 # The language name. Used for showing a menu. Shuold be localized into the 
 # target language. 
 name: "English"

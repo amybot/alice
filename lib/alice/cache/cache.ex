@@ -139,14 +139,11 @@ defmodule Alice.Cache do
                     |> Map.delete("user")
                   end)
                 |> Enum.to_list
-    #update_many @emoji_cache, emojis
-    Logger.info "Updating emote cache..."
     try do
       Alice.WriteRepo.insert_all @emoji_schema, emote_upd
     rescue
       e -> Logger.warn "Update :fire: - #{inspect e}"
     end
-    Logger.info "Done!"
   end
 
   defp handle_voice_states(states) do
