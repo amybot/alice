@@ -1,7 +1,4 @@
-# Main translation file for amybot. 
-# en is the default locale, and as such this file will always be up-to-date
-
-# The language name. Used for showing a menu. Shuold be localized into the 
+# The language name. Used for showing a menu. Should be localized into the
 # target language. 
 name: "Spanish"
 
