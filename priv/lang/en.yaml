@@ -8,7 +8,7 @@
 #    For example, "$amount" should be "$amount" regardless of language. This is so
 #    that it can be used in filling in values in translation. 
 
-# The language name. Used for showing a menu. Shuold be localized into the 
+# The language name. Used for showing a menu. Should be localized into the
 # target language. 
 name: "English"
 
