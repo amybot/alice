@@ -49,7 +49,7 @@ command:
       help: "Helpful info about amybot."
       invite: "Get the link to invite amybot to your server."
     currency:
-      balance: "Check your user balance."
+      balance: "Check your balance, or another user's balance."
       daily: "Get some money once a day."
       baltop: "See the 10 richest users."
     music:

@@ -15,13 +15,16 @@ defmodule Alice.Music do
 
   def process_event(type, data) do
     Logger.info "Got audio event: #{type} with data: #{inspect data}"
+    Logger.info "Sending to Discord!"
     embed()
-    |> field("Hotspring response", """
+    |> title("Hotspring!")
+    |> field("Hotspring says", """
             ```Elixir
             #{inspect data, pretty: true}
             ```
             """, false)
     |> color(0xFF69B4)
-    |> Emily.create_message(data["channel"])
+    |> Emily.create_message(data["channel"] |> String.to_integer)
+    Logger.info "Sent to Discord!"
   end
 end
