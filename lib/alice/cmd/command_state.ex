@@ -40,7 +40,7 @@ defmodule Alice.CommandState do
 
   defp update_cmd(mod, f, val) do
     data = %{
-      name: val[:name],
+      name: String.downcase(val[:name]),
       desc: val[:desc],
       invoke: fn(name, args, argstr, ctx) -> 
           apply mod, f, [name, args, argstr, ctx]

@@ -6,6 +6,12 @@ defmodule Alice.Util do
   import Emily.Embed
   require Logger
 
+  import Bitwise
+
+  def guild_to_shard(guild_id, shard_count) do
+    (guild_id >>> 22) |> rem(shard_count)
+  end
+
   @doc """
   Returns the current time in milliseconds
   """

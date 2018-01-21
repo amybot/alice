@@ -23,6 +23,16 @@ defmodule Alice.EventProcessor do
     end
   end
 
+  defmacro is_audio(type) do
+    quote do
+      unquote(type) in [
+          # Track
+          "AUDIO_TRACK_START", "AUDIO_TRACK_STOP", "AUDIO_TRACK_PAUSE", 
+          "AUDIO_TRACK_QUEUE"
+        ]
+    end
+  end
+
   def process do
     spawn fn -> get_event() end
     # Don't abuse redis too much
@@ -54,12 +64,11 @@ defmodule Alice.EventProcessor do
     #       let Sentry do its thing. With it here, this is covered in 
     #       get_event/0 so we don't need to worry about it here
     Alice.Cache.process_event %{"t" => type, "d" => data}
-    #Redis.q ["RPUSH", System.get_env("CACHE_QUEUE"), Poison.encode!(%{"t" => type, "d" => data})]
-    #try do
-    #  Alice.Cache.process_event %{"t" => type, "d" => data}
-    #rescue
-    #  e -> Sentry.capture_exception e, [stacktrace: System.stacktrace()]
-    #end
+  end
+
+  defp process_event(type, data) when is_audio(type) do
+    Logger.debug "Got audio event: #{inspect type} with data #{inspect data}"
+    Alice.Music.process_event type, data
   end
 
   defp process_event(type, data) do

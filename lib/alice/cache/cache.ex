@@ -22,6 +22,7 @@ defmodule Alice.Cache do
   @emoji_cache "emoji_cache"
 
   @user_hash "users"
+  @voice_state_hash "voice_states"
 
   ################
   # External API #
@@ -31,7 +32,7 @@ defmodule Alice.Cache do
   # LIST OF THINGS TO DO                                   #
   # - In-process fast lookup table for channel -> guild id #
   # - Real emote handling                                  #
-  # - ???                                                  #
+  # - Voice states                                         #
   ##########################################################
 
   def get_user(id) do
@@ -53,12 +54,24 @@ defmodule Alice.Cache do
     get_channel(id)["nsfw"] || false
   end
 
+  def channel_to_guild_id(channel) when is_integer(channel) do
+    get_channel(channel)["guild_id"]
+  end
+
   def channel_to_guild_id(channel) when is_map(channel) do
-    get_channel channel["id"]
+    get_channel(channel["id"])["guild_id"]
   end
 
   def count_guilds do
     Mongo.count :mongo, @guild_cache, %{}, pool: DBConnection.Poolboy
+  end
+
+  def get_voice_state(id) do
+    {:ok, state} = Redis.q ["HGET", @voice_state_hash, id]
+    case state do
+      :undefined -> nil
+      _ -> state |> Poison.decode!
+    end
   end
 
   ###############################################################################
@@ -70,44 +83,18 @@ defmodule Alice.Cache do
   #####################################################################################################################
   #####################################################################################################################
   #####################################################################################################################
-  
-  ##################
-  # Main functions #
-  ##################
-
-  #def process do
-  #  spawn fn -> get_event() end
-  #  # Don't abuse redis too much
-  #  # Artificially limit us to 1000/s throughput
-  #  Process.sleep 1
-  #  process()
-  #end
-
-  #def get_event do
-  #  # Read an event off the queue
-  #  {:ok, data} = Redis.q ["LPOP", System.get_env("CACHE_QUEUE")]
-  #  unless data == :undefined do
-  #    Logger.debug "Got cache event: #{data}"
-  #    event = data |> Poison.decode!
-  #    try do
-  #      process_event event
-  #    rescue
-  #      e -> Sentry.capture_exception e, [stacktrace: System.stacktrace()]
-  #    end
-  #  end
-  #end
 
   ####################
   # Helper functions #
   ####################
 
   defp update_guild(raw_guild) do
-    {channels,      raw_guild} = Map.pop(raw_guild, "channels")
-    {members,       raw_guild} = Map.pop(raw_guild, "members")
-    {_presences,    raw_guild} = Map.pop(raw_guild, "presences")
-    {_voice_states, raw_guild} = Map.pop(raw_guild, "voice_states")
-    {roles,         raw_guild} = Map.pop(raw_guild, "roles")
-    {emojis,        raw_guild} = Map.pop(raw_guild, "emojis")
+    {channels,     raw_guild} = Map.pop(raw_guild, "channels")
+    {members,      raw_guild} = Map.pop(raw_guild, "members")
+    {_presences,   raw_guild} = Map.pop(raw_guild, "presences")
+    {voice_states, raw_guild} = Map.pop(raw_guild, "voice_states")
+    {roles,        raw_guild} = Map.pop(raw_guild, "roles")
+    {emojis,       raw_guild} = Map.pop(raw_guild, "emojis")
     # Do some cleaning
     channels
     |> Enum.map(fn(x) -> add_id(raw_guild, x) end)
@@ -133,8 +120,7 @@ defmodule Alice.Cache do
     update_roles roles
     update_emojis emojis
 
-    # TODO: Put this in redis instead?
-    # insert_many "voice_state_cache", voice_states
+    handle_voice_states voice_states
 
     # TODO: Do I even care about presences?
     #insert_many "presence_cache",    presences
@@ -150,6 +136,18 @@ defmodule Alice.Cache do
 
   defp update_emojis(emojis) do
     update_many @emoji_cache, emojis
+  end
+
+  defp handle_voice_states(states) do
+    states
+    |> Enum.chunk_every(100)
+    |> Enum.each(fn(chunk) -> 
+          Redis.t fn(worker) ->
+              for state <- chunk do
+                Redis.q worker, ["HSET", @voice_state_hash, state["user_id"], Poison.encode!(state)]
+              end
+            end
+        end)
   end
 
   defp update_many(collection, list) do
@@ -321,8 +319,8 @@ defmodule Alice.Cache do
     end
   end
 
-  def process_event(%{"t" => "VOICE_STATE_UPDATE"} = _event) do
-    # TODO
+  def process_event(%{"t" => "VOICE_STATE_UPDATE"} = event) do
+    handle_voice_states [event["d"]]
   end
   
   ##################

@@ -36,8 +36,10 @@ defmodule Alice.Application do
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Alice.Supervisor]
     {:ok, sup_res} = Supervisor.start_link(children, opts)
-    Logger.info "[API] Starting API client..."
+    Logger.info "[API] Starting API clients..."
     Alice.ApiClient.start()
+    Alice.Hotspring.start()
+    Alice.Shard.start()
     Logger.info "[APP] Waiting for everything to be up..."
     :timer.sleep 1000
     Logger.info "[APP] Everything: "
@@ -69,6 +71,7 @@ defmodule Alice.Application do
     Alice.CommandState.add_commands Alice.Cmd.Utility
     Alice.CommandState.add_commands Alice.Cmd.Fun
     Alice.CommandState.add_commands Alice.Cmd.Currency
+    Alice.CommandState.add_commands Alice.Cmd.Music
 
     Logger.info "[APP] Fully up!"
 
@@ -81,7 +84,7 @@ defmodule Alice.Application do
   defp get_port do
     x = System.get_env "PORT"
     case x do
-      nil -> 8080
+      nil -> 8888
       _ -> x |> String.to_integer
     end
   end

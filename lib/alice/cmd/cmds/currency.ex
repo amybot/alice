@@ -11,11 +11,14 @@ defmodule Alice.Cmd.Currency do
   @daily_amount 100
   @day_s 86400
 
+  @symbol ":white_flower:"
+
   @command %{name: "balance", desc: "command.desc.currency.balance"}
   def balance(_name, _args, _argstr, ctx) do
     bal = Alice.ReadRepo.balance ctx["author"]
     res = Alice.I18n.translate("en", "command.currency.balance")
           |> String.replace("$balance", "#{inspect bal}")
+          |> String.replace("$symbol", @symbol)
     embed = ctx
             |> ctx_embed
             |> title("Balance")
@@ -29,7 +32,7 @@ defmodule Alice.Cmd.Currency do
                   |> Enum.reduce("", fn(x, acc) -> 
                         discord_entity = x.user_id |> Decimal.to_string |> Cache.get_user 
                         # TODO: This is gross
-                        acc <> "#{discord_entity["username"]}##{discord_entity["discriminator"]}: #{inspect x.balance}:white_flower:\n"
+                        acc <> "#{discord_entity["username"]}##{discord_entity["discriminator"]}: #{inspect x.balance}" <> @symbol <> "\n"
                       end)
     embed = ctx
             |> ctx_embed
@@ -56,6 +59,7 @@ defmodule Alice.Cmd.Currency do
       Redis.q ["SET", "user:#{user["id"]}:daily-cooldown", now]
       res = Alice.I18n.translate("en", "command.currency.daily.success")
             |> String.replace("$amount", "#{inspect @daily_amount}")
+            |> String.replace("$symbol", @symbol)
       embed = ctx
               |> ctx_embed
               |> title("Daily")
