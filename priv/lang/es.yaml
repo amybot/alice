@@ -1,0 +1,86 @@
+# Main translation file for amybot. 
+# en is the default locale, and as such this file will always be up-to-date
+
+# The language name. Used for showing a menu. Shuold be localized into the 
+# target language. 
+name: "Spanish"
+
+# General messages that AREN'T command output.
+message:
+  no-ping-everyone: "Buen intento."
+  # Available parameters:
+  # $command - The command's name
+  # $args - The arguments required. Is given as a list, like
+  #         "arg1, arg2, arg3"
+  missing-arg: "El comando $command requiere los siguientes argumentos: $args"
+  no-nsfw: "No puedes usar un comando NSFW es un un canal que no está marcado como NSFW!"
+
+# Command i18n
+command:
+  # Descriptions for commands
+  desc:
+    # Emote commands
+    emote:
+      bap: "Dale un golpecito ligero a alguien."
+      chew: "Mastica a alguien."
+      cookie: "Dale una galleta a alguien."
+      hug: "Abraza a alguien."
+      lick: "Lame a alguien."
+      nom: "Muerde a alguien."
+      poke: "Toca a alguien."
+      prod: "Pincha a alguien."
+      shoot: "Disparale a alguien."
+      stab: "Apuñala a alguien."
+      tickle: "Hazle cosquillas a alguien."
+    owner:
+      eval: ""
+      test: ""
+      testvoice: ""
+    fun:
+      sb: "Meme en formato de Bob Esponja."
+      evil: "Para cuanto tienes que mostrar tu lado malvado."
+      cat: "Consigue una imagen aleatoria de un gato."
+      dog: "Consigue una imagen aleatoria de un perro."
+      catgirl: "Consigue una imagen aleatoria de mujer-gato. La opción NSFW sólo funciona en canales marcados como NSFW."
+      rubeface: "Ve un meme de RWBY."
+      fatsquare: "Es gordo. Es un cuadrado. Es el mejor emoticón de todos los tiempos."
+    util:
+      ping: "pong! Revisa si amybot está respondiendo."
+      help: "Información valiosa de amybot."
+      invite: "Consigue el link para invitar a amybot a tú servidor."
+    currency:
+      balance: "Revisa tu saldo o el de otras personas."
+      daily: "Consigue algo de dinero una vez al día."
+      baltop: "Ve a los 10 usuarios más ricos."
+    music:
+      join: ""
+      leave: ""
+      play: ""
+  # Available parameters:
+  # $sender - person who sent the command
+  # $target - person who was targeted
+  emote:
+    bap: ":fist: **$target**, **$sender** te dió un golpecito!"
+    chew: ":blobnom: **$target**, **$sender** te masticó! Ow!"
+    cookie: ":cookie: **$target**, reciviste una galleta de **$sender**! Que tierno!"
+    hug: ":hugging: **$target**, fuiste abrazado por **$sender**! Awwww!"
+    lick: ":stuck_out_tongue: **$target**, fuiste lamido por **$sender**! Ewww!"
+    nom: ":blobnom: **$target**, fuiste moridido por **$sender**!"
+    poke: ":point_right: **$target**, **$sender** te tocó! Oye!"
+    prod: ":point_right: **$target**, **$sender** te pinchó! Oye!"
+    shoot: ":gun: **$target**, te disparó **$sender**! Rápido, llamen a un ambulancia!"
+    stab: ":knife: **$target**, fuiste apuñalado por **$sender**! Rápido, llamen a un ambulancia!"
+    tickle: ":open_hands: **$target**, **$sender** te está haciendo cosquillas!"
+  currency:
+    # Available parameters:
+    # $balance - the user's balance
+    # $symbol  - the currency symbol
+    balance: "Tienes $symbol$balance."
+    daily:
+      # Available parameters:
+      # $amount - amount collected daily
+      # $symbol  - the currency symbol
+      success: "Conseguiste tus $symbol$amount créditos diarios."
+      # Available parameters:
+      # $time - formatting time string until it's possible again
+      failure: "Estás haciendo esto muy rapido! Intentalo denuevo en $time."

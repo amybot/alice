@@ -19,7 +19,8 @@ defmodule Alice.Cache do
   @guild_cache "guild_cache"
   @channel_cache "channel_cache"
   @role_cache "role_cache"
-  @emoji_cache "emoji_cache"
+  #@emoji_cache "emoji_cache"
+  @emoji_schema "amybot_emote_cache"
 
   @user_hash "users"
   @voice_state_hash "voice_states"
@@ -135,7 +136,14 @@ defmodule Alice.Cache do
   end
 
   defp update_emojis(emojis) do
-    update_many @emoji_cache, emojis
+    #update_many @emoji_cache, emojis
+    Logger.info "Updating emote cache..."
+    try do
+      Alice.WriteRepo.insert_all @emoji_schema, emojis, [on_conflict: :replace_all]
+    rescue
+      e -> Logger.warn "Update :fire: - #{inspect e}"
+    end
+    Logger.info "Done!"
   end
 
   defp handle_voice_states(states) do

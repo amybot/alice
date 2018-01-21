@@ -10,6 +10,8 @@ defmodule Alice.WriteRepo.Migrations.EmoteCache do
       add :guild_id,   :decimal, primary_key: true
       add :emote_id,   :decimal
       add :emote_name, :string
+      add :roles,      {:array, :decimal}
+      add :user,       
     end
     create index(:amybot_emote_cache, [:guild_id, :emote_id, :emote_name])
   end
