@@ -55,6 +55,7 @@ defmodule Alice.EventProcessor do
   end
 
   defp process_event(type, data) when type == "MESSAGE_CREATE" do
+    # TODO: Pre-process this
     Alice.Command.process_message data
   end
 

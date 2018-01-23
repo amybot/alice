@@ -28,10 +28,10 @@ defmodule Alice.Cmd.Emote do
         response = Alice.I18n.translate("en", "command.emote.#{name}")
                    |> String.replace("$sender", ctx["author"]["username"])
                    |> String.replace("$target", argstr)
-        e = ctx
-            |> ctx_embed
-            |> title(response)
-        Emily.create_message ctx["channel_id"], [content: nil, embed: e]
+        ctx
+        |> ctx_embed
+        |> desc(response)
+        |> Emily.create_message(ctx["channel_id"])
       else
         Emily.create_message ctx["channel_id"], [content: nil, embed: error(ctx, Alice.I18n.translate("en", "message.no-ping-everyone"))]
       end

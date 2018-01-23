@@ -1,6 +1,6 @@
 # The language name. Used for showing a menu. Should be localized into the
 # target language. 
-name: "Spanish"
+name: "Español"
 
 # General messages that AREN'T command output.
 message:

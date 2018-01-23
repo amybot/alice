@@ -9,19 +9,29 @@ defmodule Alice.Cache do
     duplicate every time a shard (re)starts. 
   - This was originally a separate worker BEAM instance, but has been moved 
     into this application mainly for efficiency - this way there's no need for
-    an extra round-trip to hit up redis for events, we can just keep it all 
+    an extra round-trip to hit up redis for data, we can just keep it all 
     in-process and lose nothing. 
+  - Data is stored in a couple different places, for a variety of reasons. 
+    These mostly boil down to speed vs. querying-ability. For example, I 
+    generally just want to get user data quickly, whereas with guilds I may 
+    want to get an aggregate count across all guilds. Emotes specifically are 
+    stored in PostgreSQL because it's the easiest way to do some of the ugly
+    queries that are necessary (ex `row_number() ... PARTITION BY`-type
+    queries). 
   """
 
   alias Lace.Redis
   require Logger
 
+  # MongoDB collections
   @guild_cache "guild_cache"
   @channel_cache "channel_cache"
   @role_cache "role_cache"
-  #@emoji_cache "emoji_cache"
+
+  # PostgreSQL table
   @emoji_schema "amybot_emote_cache"
 
+  # Redis keys
   @user_hash "users"
   @voice_state_hash "voice_states"
 
@@ -29,12 +39,16 @@ defmodule Alice.Cache do
   # External API #
   ################
 
-  ##########################################################
-  # LIST OF THINGS TO DO                                   #
-  # - In-process fast lookup table for channel -> guild id #
-  # - Real emote handling                                  #
-  # - Voice states                                         #
-  ##########################################################
+  # So something to pay attention to here:
+  #
+  # The external API is honestly kind of a trainwreck, for a variety of 
+  # reasons. Some of these reasons are due to bad planning, others are due to 
+  # the fact that different things require different data formats; ex. this 
+  # lib. supports using integers for all snowflake operations, but Hotspring 
+  # (JDA-A based) requires strings for snowflakes. This external API is a mess
+  # beacuse it tries to cover ALL these use-cases.
+  #
+  # You've been warned. 
 
   def get_user(id) do
     {:ok, user} = Redis.q ["HGET", @user_hash, id]
@@ -44,11 +58,32 @@ defmodule Alice.Cache do
     end
   end
 
+  def get_voice_channel(snowflake) do
+    state = get_voice_state snowflake
+    case state do
+      nil -> nil
+      _ -> state["channel_id"]
+    end
+  end
+
   @doc """
   Convert a snowflake into a channel object
   """
-  def get_channel(id) do
+  def get_channel(id) when is_integer(id) do
     Mongo.find_one :mongo, @channel_cache, %{"id": id}, pool: DBConnection.Poolboy
+  end
+
+  # TODO: WTF IS THIS FUNCTION NAME
+  def get_channel(id) when is_binary(id) do
+    id |> String.to_integer |> get_channel |> Access.get("id")
+  end
+
+  def get_channel_name(id) when is_integer(id) do
+    id |> get_channel |> Access.get("name")
+  end
+
+  def get_channel_name(id) when is_binary(id) do
+    id |> String.to_integer |> get_channel_name
   end
 
   def is_nsfw(id) do
@@ -57,6 +92,10 @@ defmodule Alice.Cache do
 
   def channel_to_guild_id(channel) when is_integer(channel) do
     get_channel(channel)["guild_id"]
+  end
+
+  def channel_to_guild_id(channel) when is_binary(channel) do
+    channel |> String.to_integer |> channel_to_guild_id |> Integer.to_string
   end
 
   def channel_to_guild_id(channel) when is_map(channel) do
@@ -181,12 +220,6 @@ defmodule Alice.Cache do
     |> Enum.each(fn(chunk) -> handle_user_chunk(guild_id, chunk) end)
   end
 
-  @doc """
-  Note that this method stores member objects in a *hash* that 
-  corresponds to the guild. This is so that we can trivially do do a 
-  fast-delete of all a guild's members, while still not losing the ability to
-  query this info based on guild id
-  """
   defp handle_user_chunk(guild_id, chunk) do
     guild_key = "guild:#{guild_id}:members"
     Redis.t fn(worker) -> 
@@ -205,9 +238,7 @@ defmodule Alice.Cache do
     {user, member}
   end
 
-  @doc """
-  Ensure that entities always have a guild_id attached
-  """
+  # Ensure that entities always have a guild_id attached
   defp add_id(guild, entity) when is_map(guild) do
     entity |> Map.put("guild_id", guild["id"])
   end

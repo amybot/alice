@@ -15,7 +15,7 @@ defmodule Alice.Shard do
   end
 
   def get_self do
-    get!("/self").body
+    get!("/self").body |> Poison.decode!
   end
 
   def get_self_id do
@@ -23,7 +23,7 @@ defmodule Alice.Shard do
   end
 
   def get_shard_count do
-    get!("/shard/count").body
+    get!("/shard/count").body["shard_count"]
   end
 
   def get_voice_connect_data(guild, channel) when is_binary(guild) and is_binary(channel) do

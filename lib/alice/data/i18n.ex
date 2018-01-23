@@ -20,15 +20,21 @@ defmodule Alice.I18n do
         locale = List.first(split)
         if List.last(split) == "yaml" do
           Logger.info "[I18N] Loading locale: #{locale} from #{file}"
-          {:ok, kl} = :fast_yaml.decode_from_file "priv/lang/#{file}", plain_as_atom: true
-          # It comes as [[key: value]] for w/e reason. fast_yaml plz
-          tln = kl
-                |> List.first
-                |> Enum.reduce(%{}, fn({key, value}, acc) -> 
-                    Map.put acc, key, value
-                  end)
+          try do
+            {:ok, kl} = :fast_yaml.decode_from_file "priv/lang/#{file}", plain_as_atom: true
+            # It comes as [[key: value]] for w/e reason. fast_yaml plz
+            tln = kl
+                  |> List.first
+                  |> Enum.reduce(%{}, fn({key, value}, acc) -> 
+                      Map.put acc, key, value
+                    end)
           
-          Map.put l, locale, tln
+            Map.put l, locale, tln
+          rescue
+            e -> 
+              Logger.warn "Couldn't load #{file} - #{inspect e, pretty: true}"
+              l
+          end
         else
           Logger.info "Ignoring invalid localization file: #{file}"
           l

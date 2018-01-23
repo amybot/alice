@@ -14,13 +14,13 @@ name: "English"
 
 # General messages that AREN'T command output.
 message:
-  no-ping-everyone: "Nice try."
+  no-ping-everyone: "<:xmark:392356116102774786> Nice try."
   # Available parameters:
   # $command - The command's name
   # $args - The arguments required. Is given as a list, like
   #         "arg1, arg2, arg3"
-  missing-arg: "$command requires the following argument(s): $args"
-  no-nsfw: "You can't use an NSFW command in a non-NSFW channel!"
+  missing-arg: "<:xmark:392356116102774786> $command requires the following argument(s): $args"
+  no-nsfw: "<:xmark:392356116102774786> You can't use an NSFW command in a non-NSFW channel!"
 
 # Command i18n
 command:
@@ -60,9 +60,10 @@ command:
       daily: "Get some money once a day."
       baltop: "See the 10 richest users."
     music:
-      join: ""
-      leave: ""
-      play: ""
+      join: "Bring amybot into the channel you're in."
+      leave: "Make amybot leave the voice channel it's currently in."
+      play: "Start playing songs in the queue."
+      queue: "Add a song to the queue." 
   # Available parameters:
   # $sender - person who sent the command
   # $target - person who was targeted
@@ -82,15 +83,36 @@ command:
     # Available parameters:
     # $balance - the user's balance
     # $symbol  - the currency symbol
-    balance: "You have $balance$symbol."
+    balance: "<:check:392356124961013762> You have $balance$symbol."
     daily:
       # Available parameters:
       # $amount - amount collected daily
       # $symbol  - the currency symbol
-      success: "You collect your daily $amount$symbol."
+      success: "<:check:392356124961013762> You collect your daily $amount$symbol."
       # Available parameters:
       # $time - formatting time string until it's possible again
-      failure: "You're doing that too fast! Try again in $time."
+      failure: "<:xmark:392356116102774786> You're doing that too fast! Try again in $time."
+  music:
+    join:
+      # Available parameters:
+      # $channel - name of the channel that was joined.
+      success: "<:check:392356124961013762> Successfully joined $channel!"
+      failure: 
+        user-not-in-voice: "<:xmark:392356116102774786> You're not in a voice channel! If this is incorrect, try leaving and re-joining the voice channel."
+        bot-in-same-voice: "<:xmark:392356116102774786> I'm already in that channel!"
+        bot-already-in-voice: "<:xmark:392356116102774786> I'm already in a voice channel!"
+    leave:
+      success: "<:check:392356124961013762> Successfully left $channel!"
+      failure:
+        user-not-in-voice: "<:xmark:392356116102774786> You're not in a voice channel! If this is incorrect, try leaving and re-joining the voice channel."
+        bot-not-in-channel: "<:xmark:392356116102774786> I'm not in a voice channel!"
+        bot-in-different-channel: "<:xmark:392356116102774786> I'm in a different voice channel!"
+    queue:
+      # Available parameters:
+      # $length - Queue length
+      length: "<:check:392356124961013762> Queue length: $length songs."
+      success: "<:check:392356124961013762> Queued successfully!"
+      failure: "<:xmark:392356116102774786> Couldn't queue that!"
 
 # Don't copy anything past this line
 

@@ -40,10 +40,6 @@ defmodule Alice.Application do
     Alice.ApiClient.start()
     Alice.Hotspring.start()
     Alice.Shard.start()
-    Logger.info "[APP] Waiting for everything to be up..."
-    :timer.sleep 1000
-    Logger.info "[APP] Everything: "
-    Logger.info "[APP] #{inspect Supervisor.which_children(sup_res), pretty: true} "
 
     Logger.info "[DB] Making database if needed..."
     db_conf = Application.get_env(:alice, Alice.WriteRepo)
