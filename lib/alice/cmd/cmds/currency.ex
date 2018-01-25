@@ -15,7 +15,7 @@ defmodule Alice.Cmd.Currency do
 
   @command %{name: "balance", desc: "command.desc.currency.balance"}
   def balance(_name, _args, _argstr, ctx) do
-    bal = Alice.ReadRepo.balance ctx["author"]
+    bal = Alice.Database.balance ctx["author"]
     res = Alice.I18n.translate("en", "command.currency.balance")
           |> String.replace("$balance", "#{inspect bal}")
           |> String.replace("$symbol", @symbol)
@@ -28,11 +28,11 @@ defmodule Alice.Cmd.Currency do
 
   @command %{name: "baltop", desc: "command.desc.currency.baltop"}
   def baltop(_name, _args, _argstr, ctx) do
-    balance_str = Alice.ReadRepo.balance_top
+    balance_str = Alice.Database.balance_top
                   |> Enum.reduce("", fn(x, acc) -> 
-                        discord_entity = x.user_id |> Decimal.to_string |> Cache.get_user 
+                        discord_entity = x["id"] |> Cache.get_user 
                         # TODO: This is gross
-                        acc <> "#{discord_entity["username"]}##{discord_entity["discriminator"]}: #{inspect x.balance}" <> @symbol <> "\n"
+                        acc <> "#{discord_entity["username"]}##{discord_entity["discriminator"]}: #{inspect x["balance"]}" <> @symbol <> "\n"
                       end)
     embed = ctx
             |> ctx_embed
@@ -55,7 +55,7 @@ defmodule Alice.Cmd.Currency do
     cooldown = now - last_time
 
     if cooldown >= @day_s do
-      _new_user = Alice.WriteRepo.increment_balance user, @daily_amount
+      _new_user = Alice.Database.increment_balance user, @daily_amount
       Redis.q ["SET", "user:#{user["id"]}:daily-cooldown", now]
       res = Alice.I18n.translate("en", "command.currency.daily.success")
             |> String.replace("$amount", "#{inspect @daily_amount}")

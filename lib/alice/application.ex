@@ -7,21 +7,31 @@ defmodule Alice.Application do
   require Logger
 
   def start(_type, _args) do
+    Logger.info "[APP] Starting..."
     {:ok, _agent_pid} = Alice.CommandState.start_link
     # List all child processes to be supervised
     children = [
       # Starts a worker by calling: Alice.Worker.start_link(arg)
       # {Alice.Worker, arg},
-      Alice.ReadRepo,
-      Alice.WriteRepo,
       {Alice.I18n, []},
-      {Mongo, [
-          name: :mongo, 
+      # Yes, we really DO need two different mongo pools.
+
+      # Used ONLY for cache
+      Mongo.child_spec([
+          name: :mongo_cache, 
           database: System.get_env("CACHE_DATABASE"), 
           pool: DBConnection.Poolboy, 
           hostname: System.get_env("MONGO_IP"), 
           port: "27017"
-        ]},
+        ], [id: :mongo_cache]),
+      # Used for real data
+      Mongo.child_spec([
+          name: :mongo, 
+          database: System.get_env("MAIN_DATABASE"), 
+          pool: DBConnection.Poolboy, 
+          hostname: System.get_env("MONGO_IP"), 
+          port: "27017"
+        ], [id: :mongo]),
       {Lace.Redis, %{
           redis_ip: System.get_env("REDIS_IP"), redis_port: 6379, pool_size: 100, redis_pass: System.get_env("REDIS_PASS")
         }},

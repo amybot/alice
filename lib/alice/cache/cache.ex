@@ -27,9 +27,7 @@ defmodule Alice.Cache do
   @guild_cache "guild_cache"
   @channel_cache "channel_cache"
   @role_cache "role_cache"
-
-  # PostgreSQL table
-  @emoji_schema "amybot_emote_cache"
+  @emoji_cache "emoji_cache"
 
   # Redis keys
   @user_hash "users"
@@ -78,7 +76,7 @@ defmodule Alice.Cache do
   Convert a snowflake into a channel object
   """
   def get_channel(id) when is_integer(id) do
-    Mongo.find_one :mongo, @channel_cache, %{"id": id}, pool: DBConnection.Poolboy
+    Mongo.find_one :mongo_cache, @channel_cache, %{"id": id}, pool: DBConnection.Poolboy
   end
 
   # TODO: WTF IS THIS FUNCTION NAME
@@ -111,7 +109,7 @@ defmodule Alice.Cache do
   end
 
   def count_guilds do
-    Mongo.count :mongo, @guild_cache, %{}, pool: DBConnection.Poolboy
+    Mongo.count :mongo_cache, @guild_cache, %{}, pool: DBConnection.Poolboy
   end
 
   @doc """
@@ -180,7 +178,7 @@ defmodule Alice.Cache do
     |> update_emojis
 
     # Dump it into db
-    Mongo.update_one(:mongo, @guild_cache, %{"id": raw_guild["id"]}, 
+    Mongo.update_one(:mongo_cache, @guild_cache, %{"id": raw_guild["id"]}, 
       %{"$set": raw_guild}, [pool: DBConnection.Poolboy, upsert: true])
     update_members_and_users raw_guild["id"], members
 
@@ -199,18 +197,7 @@ defmodule Alice.Cache do
   end
 
   defp update_emojis(emojis) do
-    emote_upd = emojis
-                |> Enum.map(fn(emote) -> 
-                    emote
-                    |> Map.delete("roles")
-                    |> Map.delete("user")
-                  end)
-                |> Enum.to_list
-    try do
-      Alice.WriteRepo.insert_all @emoji_schema, emote_upd
-    rescue
-      e -> Logger.warn "Emoji update :fire: - #{inspect e}"
-    end
+    update_many @emoji_cache, emojis
   end
 
   defp handle_self_voice_state(state) do
@@ -269,7 +256,7 @@ defmodule Alice.Cache do
       # So this is really bad, but apparently making a nice update_many filter 
       # will be god-awful :(
       for snowflake <- list do
-        Mongo.update_one :mongo, collection, %{"id": snowflake["id"]}, %{"$set": snowflake}, 
+        Mongo.update_one :mongo_cache, collection, %{"id": snowflake["id"]}, %{"$set": snowflake}, 
           [pool: DBConnection.Poolboy, upsert: true]
       end
     end
@@ -326,7 +313,7 @@ defmodule Alice.Cache do
     raw_guild = event["d"]
     # GUILD_UPDATE doesn't contain anywhere NEAR as much as GUILD_CREATE does,
     # so we only update the guild cache
-    Mongo.update_one(:mongo, @guild_cache, %{"id": raw_guild["id"]}, 
+    Mongo.update_one(:mongo_cache, @guild_cache, %{"id": raw_guild["id"]}, 
       %{"$set": raw_guild}, [pool: DBConnection.Poolboy, upsert: true])
   end
 
@@ -334,7 +321,7 @@ defmodule Alice.Cache do
     guild = event["d"]
     guild_key = "guild:#{guild["id"]}:members"
     if is_nil guild["unavailable"] do
-      Mongo.delete_one(:mongo, @guild_cache, %{"id": guild["id"]}, [pool: DBConnection.Poolboy])
+      Mongo.delete_one(:mongo_cache, @guild_cache, %{"id": guild["id"]}, [pool: DBConnection.Poolboy])
       #{:ok, ids} = Redis.q ["HKEYS", guild_key]
       Redis.q ["DEL", guild_key]
       #ids
@@ -370,14 +357,14 @@ defmodule Alice.Cache do
   end
 
   def process_event(%{"t" => "CHANNEL_DELETE"} = event) do
-    Mongo.delete_one(:mongo, @channel_cache, %{"id": event["d"]["id"]}, [pool: DBConnection.Poolboy])
+    Mongo.delete_one(:mongo_cache, @channel_cache, %{"id": event["d"]["id"]}, [pool: DBConnection.Poolboy])
   end
 
   def process_event(%{"t" => "GUILD_EMOJIS_UPDATE"} = event) do
     data = event["d"]
     guild = data["guild_id"]
     emojis = data["emojis"]
-    Alice.WriteRepo.prune_emotes guild
+    Mongo.delete_many(:mongo_cache, @emoji_cache, %{"guild_id": guild})
     emojis
     |> Enum.map(fn(x) -> add_id(guild, x) end)
     |> Enum.to_list
@@ -387,7 +374,7 @@ defmodule Alice.Cache do
   def process_event(%{"t" => "GUILD_MEMBER_ADD"} = event) do
     member = event["d"]
     update_members_and_users member["guild_id"], [member]
-    Mongo.update_one(:mongo, @guild_cache, %{"id": member["guild_id"]}, 
+    Mongo.update_one(:mongo_cache, @guild_cache, %{"id": member["guild_id"]}, 
       %{"$inc": %{"member_count": 1}}, [pool: DBConnection.Poolboy, upsert: true])
   end
 
@@ -396,7 +383,7 @@ defmodule Alice.Cache do
     user = event["d"]["user"]
     Redis.q ["HDEL", "guild:#{guild_id}:members", user["id"]]
     #Redis.q ["ZINCRBY", @user_zset, -1, user["id"]]
-    Mongo.update_one(:mongo, @guild_cache, %{"id": guild_id}, 
+    Mongo.update_one(:mongo_cache, @guild_cache, %{"id": guild_id}, 
       %{"$inc": %{"member_count": -1}}, [pool: DBConnection.Poolboy, upsert: true])
   end
 
@@ -419,7 +406,7 @@ defmodule Alice.Cache do
   end
 
   def process_event(%{"t" => "GUILD_ROLE_DELETE"} = event) do
-    Mongo.delete_one(:mongo, @role_cache, %{"id": event["d"]["role_id"]}, [pool: DBConnection.Poolboy])
+    Mongo.delete_one(:mongo_cache, @role_cache, %{"id": event["d"]["role_id"]}, [pool: DBConnection.Poolboy])
   end
 
   def process_event(%{"t" => "PRESENCE_UPDATE"} = _event) do
