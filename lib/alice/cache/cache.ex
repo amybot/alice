@@ -34,6 +34,14 @@ defmodule Alice.Cache do
   # Redis keys
   @user_hash "users"
   @voice_state_hash "voice_states"
+  # Note that our client's voice state is "special," because a bot can be in 
+  # many voice channels. We don't care about bots, because we only want users
+  # listening anyway. 
+  @self_voice_hash "self_voice_states"
+  # We maintain a global set of voice states, as well as a per-channel set with
+  # this suffix. This is so that when a user leaves a channel, we can use their
+  # voice states to determine if we can pause/stop the player. 
+  @channel_voice_states ":voice-states"
 
   ################
   # External API #
@@ -106,8 +114,28 @@ defmodule Alice.Cache do
     Mongo.count :mongo, @guild_cache, %{}, pool: DBConnection.Poolboy
   end
 
+  @doc """
+  DO NOT USE THIS FOR SELF VOICE STATE!!!!!!!!!!!!!!!!!
+  """
   def get_voice_state(id) do
     {:ok, state} = Redis.q ["HGET", @voice_state_hash, id]
+    case state do
+      :undefined -> nil
+      _ -> state |> Poison.decode!
+    end
+  end
+
+  def get_self_voice_state_guild(guild) do
+    {:ok, state} = Redis.q ["HGET", @self_voice_hash, guild]
+    case state do
+      :undefined -> nil
+      _ -> state |> Poison.decode!
+    end
+  end
+
+  def get_self_voice_state_channel(channel) do
+    guild = channel_to_guild_id channel
+    {:ok, state} = Redis.q ["HGET", @self_voice_hash, guild]
     case state do
       :undefined -> nil
       _ -> state |> Poison.decode!
@@ -156,7 +184,7 @@ defmodule Alice.Cache do
       %{"$set": raw_guild}, [pool: DBConnection.Poolboy, upsert: true])
     update_members_and_users raw_guild["id"], members
 
-    handle_voice_states voice_states
+    handle_voice_states_initial voice_states
 
     # TODO: Do I even care about presences?
     #insert_many "presence_cache",    presences
@@ -181,11 +209,50 @@ defmodule Alice.Cache do
     try do
       Alice.WriteRepo.insert_all @emoji_schema, emote_upd
     rescue
-      e -> Logger.warn "Update :fire: - #{inspect e}"
+      e -> Logger.warn "Emoji update :fire: - #{inspect e}"
     end
   end
 
-  defp handle_voice_states(states) do
+  defp handle_self_voice_state(state) do
+    unless is_nil state["channel_id"] do
+      # Channel, update guild
+      guild = unless is_nil state["guild_id"] do
+                state["guild_id"]
+              else
+                channel_to_guild_id state["channel_id"]
+              end
+      Redis.q ["HSET", @self_voice_hash, guild, Poison.encode!(state)]              
+    else
+      # No channel, remove guild
+      guild = state["guild_id"]
+      Redis.q ["HDEL", @self_voice_hash, guild]
+    end
+  end
+
+  defp handle_voice_state(state) do
+    try do
+      {:ok, unparsed} = Redis.q ["HGET", @voice_state_hash, state["user_id"]]
+      unless unparsed == :undefined do
+        old_state = unparsed |> Poison.decode!
+        unless is_nil old_state["channel_id"]  do
+          # If the old state isn't nil, remove it
+          old_channel = old_state["channel_id"]
+          Redis.q ["HDEL", "#{inspect old_channel}#{@channel_voice_states}", state["user_id"]]
+        end
+      end
+      # Update the main voice state
+      Redis.q ["HSET", @voice_state_hash, state["user_id"], Poison.encode!(state)]
+      # Update new channel state if needed
+      unless is_nil state["channel_id"] do
+        Redis.q ["HSET", "#{inspect state["channel_id"]}#{@channel_voice_states}", state["user_id"], true]
+      end
+    rescue
+      e -> 
+        Logger.warn "#{inspect e, pretty: true} - #{inspect System.stacktrace(), pretty: true}"
+    end
+  end
+
+  defp handle_voice_states_initial(states) do
     states
     |> Enum.chunk_every(100)
     |> Enum.each(fn(chunk) -> 
@@ -370,7 +437,13 @@ defmodule Alice.Cache do
   end
 
   def process_event(%{"t" => "VOICE_STATE_UPDATE"} = event) do
-    handle_voice_states [event["d"]]
+    self_id = Alice.Shard.get_self()["id"]
+    user_id = event["d"]["user_id"]
+    if user_id == self_id do
+      handle_self_voice_state event["d"]
+    else
+      handle_voice_state event["d"]
+    end
   end
   
   ##################

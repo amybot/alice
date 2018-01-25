@@ -7,6 +7,7 @@ defmodule Alice.Util do
   require Logger
 
   import Bitwise
+  require OptionParser
 
   def guild_to_shard(guild_id, shard_count) do
     (guild_id >>> 22) |> rem(shard_count)
@@ -58,5 +59,10 @@ defmodule Alice.Util do
     |> title("Error!")
     |> color(0xFF0000)
     |> desc(msg)
+  end
+
+  def parse(args) when is_list(args) do
+    {flags, args, _invalid} = OptionParser.parse args
+    {flags, args}
   end
 end

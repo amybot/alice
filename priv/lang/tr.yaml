@@ -1,0 +1,97 @@
+# The language name. Used for showing a menu. Should be localized into the
+# target language. 
+name: "Türkçe"
+
+# General messages that AREN'T command output.
+message:
+  no-ping-everyone: ":xmark: Güzel deneme"
+  # Available parameters:
+  # $command - The command's name
+  # $args - The arguments required. Is given as a list, like
+  #         "arg1, arg2, arg3"
+  missing-arg: ":xmark: $command aşağıdaki argümanları gerektirir: $args"
+  no-nsfw: ":xmark: non-NSFW kanalında NFSW kullanamazsın! "
+
+# Command i18n
+command:
+  # Descriptions for commands
+  desc:
+    # Emote commands
+    emote:
+      bap: "Birinin yüzüne vur."
+      chew: "Birini çiğne."
+      cookie: "Birine kurabiye ver."
+      hug: "Birine sarıl."
+      lick: "Birini yala."
+      nom: "Birini ye."
+      poke: "Birini dürt."
+      prod: "Birini dürt."
+      shoot: "Birini vur."
+      stab: "Birini bıçakla."
+      tickle: "Birini gıdıkla."
+    owner:
+      eval: ""
+      test: ""
+      testvoice: ""
+    fun:
+      sb: "Viral Süngerbob metni."
+      evil: "Birine gerçek kötülüğü göstermeye ihtiyaç duyduğun zaman için."
+      cat: "Rastgele bir kedi resmi al."
+      dog: "Rastgele bir köpek resmi al."
+      catgirl: "Rastgele bir 'kedi kız' resmi al. NSFW seçeneği yalnızca NSFW kanallarında çalışır."
+      rubeface: "Bir RWBY virali gör."
+      fatsquare: "Bu şişko. Bu bir meydan. Bu tüm zamanların en iyi emojisi."
+    util:
+      ping: "pong! Amybot yanıt veriyor mu diye kontrol et."
+      help: "Amybot hakkında yardımcı bilgi."
+      invite: "Amybotu sunucuna davet etmek için linki al."
+    currency:
+      balance: "Bakiyeni kontrol et, ya da başka bir kullanıcının bakiyesini."
+      daily: "Günde bir kez biraz para al."
+      baltop: "En zengin 10 kullanıcıyı gör."
+  emote:
+    bap: ":fist: $target, az önce $sender tarafından yumruklandın!"
+    chew: ":blobnom: $target, $sender az önce seni çiğnedi! Ow!"
+    cookie: ":cookie: $target, az önce sana $sender  tarafından kurabiye verildi! Ne kadar tatlı!"
+    hug: ":hugging: $target, az önce $sender! tarafından kucaklandın Awwww!"
+    lick: ":stuck_out_tongue: $target, az önce $sender tarafından yalandın! Ewww!"
+    nom: ":blobnom: $target, az önce $sender tarafından yenildin!"
+    poke: ":point_right: $target, $sender seni dürttü! Hey!"
+    prod: ":point_right: $target, $sender seni dürttü! Hey!"
+    shoot: ":gun: $target, az önce $sender tarafından vuruldun! Çabuk, ambulans çağır!"
+    stab: ":knife: $target, az önce $sender tarafından bıçaklandın! Çabuk, ambulans çağır!"
+    tickle: ":open_hands: $target, yaz önce $sender tarafından gıdıklandın!"
+  currency:
+    # Available parameters:
+    # $balance - the user's balance
+    # $symbol  - the currency symbol
+    balance: ":check: '$balance$symbol'e sahipsin."
+    daily:
+      # Available parameters:
+      # $amount - amount collected daily
+      # $symbol  - the currency symbol
+      success: ":check: Günlük '$amount$symbol'ünü toplarsın."
+      # Available parameters:
+      # $time - formatting time string until it's possible again
+      failure: ":xmark: Çok hızlı yapıyorsun! $time. içinde tekrar dene."
+  music:
+    join:
+      # Available parameters:
+      # $channel - name of the channel that was joined.
+      success: ":check: Başarıyla katılınıldı. $channel!"
+      failure: 
+        user-not-in-voice: ":xmark: Bir sesli kanalda değilsin! Eğer bu yanlışsa, kanaldan ayrılmayı ve tekrar katılmayı dene."
+        bot-in-same-voice: ":xmark: Zaten bu kanaldayım"
+        bot-already-in-voice: ":xmark: Zaten bir sesli kanaldayım!"
+    leave:
+      success: ":check: Başarıyla ayrılındı $channel!"
+      failure:
+        user-not-in-voice: ":xmark: Bir sesli kanalda değilsin! Eğer bu yanlışsa, kanaldan ayrılmayı ve tekrar katılmayı dene."
+        bot-not-in-channel: ":xmark: Bir sesli kanalda değilim!"
+        bot-in-different-channel: ":xmark: Farklı bir sesli kanaldayım!"
+    queue:
+      # Available parameters:
+      # $length - Queue length
+      length: ":check: Sıra uzunluğu: $length songs."
+      success: ":check: Başarıyla sıraya eklendi!"
+      failure: ":xmark: Sıraya eklenemedi!"

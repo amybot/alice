@@ -19,9 +19,10 @@ defmodule Alice.I18n do
         split = String.split(file, ".", parts: 2)
         locale = List.first(split)
         if List.last(split) == "yaml" do
-          Logger.info "[I18N] Loading locale: #{locale} from #{file}"
+        Logger.info "[I18N] Loading locale: #{locale} from #{file}"
+          res = :fast_yaml.decode_from_file "priv/lang/#{file}", plain_as_atom: true
           try do
-            {:ok, kl} = :fast_yaml.decode_from_file "priv/lang/#{file}", plain_as_atom: true
+            {:ok, kl} = res
             # It comes as [[key: value]] for w/e reason. fast_yaml plz
             tln = kl
                   |> List.first
@@ -32,7 +33,8 @@ defmodule Alice.I18n do
             Map.put l, locale, tln
           rescue
             e -> 
-              Logger.warn "Couldn't load #{file} - #{inspect e, pretty: true}"
+              Logger.warn "Couldn't load #{file} - #{inspect Exception.format(:error, e, System.stacktrace()), pretty: true}"
+              Logger.warn "Res was actually: #{inspect res, pretty: true}"
               l
           end
         else

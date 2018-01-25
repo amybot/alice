@@ -1,6 +1,6 @@
 # The language name. Used for showing a menu. Should be localized into the
 # target language. 
-name: "Português"
+name: "PortuguÃªs"
 
 # General messages that AREN'T command output.
 message:
@@ -10,7 +10,7 @@ message:
   # $args - The arguments required. Is given as a list, like
   #         "arg1, arg2, arg3"
   missing-arg: "$command precisa do seguinte argumento(s): $args"
-  no-nsfw: "Você só pode usar comando NSFW em canais para maiores!"
+  no-nsfw: "VocÃª sÃ³ pode usar comando NSFW em canais para maiores!"
 
 # Command i18n
 command:
@@ -19,36 +19,36 @@ command:
     # Emote commands
     emote:
       bap: "Dar um cascudo."
-      chew: "Mastigar em alguém."
-      cookie: "Dar um cookie para alguém."
-      hug: "Abraçar alguém."
-      lick: "Lamber alguém."
-      nom: "Comer em alguém."
-      poke: "Cutucar alguém."
-      prod: "Furar alguém."
-      shoot: "Atirar em alguém."
-      stab: "Esfaquear alguém."
-      tickle: "Fazer cócegas em alguém."
+      chew: "Mastigar em alguÃ©m."
+      cookie: "Dar um cookie para alguÃ©m."
+      hug: "AbraÃ§ar alguÃ©m."
+      lick: "Lamber alguÃ©m."
+      nom: "Comer em alguÃ©m."
+      poke: "Cutucar alguÃ©m."
+      prod: "Furar alguÃ©m."
+      shoot: "Atirar em alguÃ©m."
+      stab: "Esfaquear alguÃ©m."
+      tickle: "Fazer cÃ³cegas em alguÃ©m."
     owner:
       eval: ""
       test: ""
       testvoice: ""
     fun:
       sb: "Texto meme do Bob Esponja."
-      evil: "Para quando você precisa mostrar ser maligno."
-      cat: "Receba uma imagem de um gato aleatório."
-      dog: "Receba uma imagem de um cachorro aleatório."
-      catgirl: "Receba uma imagem de uma menina-gato aleatória. Opção NSFW só funciona em canais para maiores de idade."
+      evil: "Para quando vocÃª precisa mostrar ser maligno."
+      cat: "Receba uma imagem de um gato aleatÃ³rio."
+      dog: "Receba uma imagem de um cachorro aleatÃ³rio."
+      catgirl: "Receba uma imagem de uma menina-gato aleatÃ³ria. OpÃ§Ã£o NSFW sÃ³ funciona em canais para maiores de idade."
       rubeface: "Veja um meme de RWBY."
-      fatsquare: "É gordo. É um quadrado. É o melhor emote de todos os tempos."
+      fatsquare: "Ã‰ gordo. Ã‰ um quadrado. Ã‰ o melhor emote de todos os tempos."
     util:
-      ping: "pong! Cheque se a amybot está respondendo."
-      help: "Informações úteis sobre a amybot."
+      ping: "pong! Cheque se a amybot estÃ¡ respondendo."
+      help: "InformaÃ§Ãµes Ãºteis sobre a amybot."
       invite: "Receba o link para convidar a amybot para seu server."
     currency:
-      balance: "Cheque seu balanço, ou o balanço de outro usuário."
+      balance: "Cheque seu balanÃ§o, ou o balanÃ§o de outro usuÃ¡rio."
       daily: "Ganhe uma grana uma vez por dia."
-      baltop: "Veja os 10 usuários mais ricos."
+      baltop: "Veja os 10 usuÃ¡rios mais ricos."
     music:
       join: ""
       leave: ""
@@ -58,26 +58,26 @@ command:
   # $target - person who was targeted
   emote:
     bap: ":fist: **$target**, **$sender** te deu um cascudo!"
-    chew: ":blobnom: **$target**, **$sender** mastigou em você! Ow!"
-    cookie: ":cookie: **$target**, você ganhou um cookie de **$sender**! Que fofo!"
-    hug: ":hugging: **$target**, **$sender** te deu um abraço! Awwww!"
-    lick: ":stuck_out_tongue: **$target**, você foi lambido por **$sender**! Ewww!"
-    nom: ":blobnom: **$target**, **$sender** está comendo em você!"
+    chew: ":blobnom: **$target**, **$sender** mastigou em vocÃª! Ow!"
+    cookie: ":cookie: **$target**, vocÃª ganhou um cookie de **$sender**! Que fofo!"
+    hug: ":hugging: **$target**, **$sender** te deu um abraÃ§o! Awwww!"
+    lick: ":stuck_out_tongue: **$target**, vocÃª foi lambido por **$sender**! Ewww!"
+    nom: ":blobnom: **$target**, **$sender** estÃ¡ comendo em vocÃª!"
     poke: ":point_right: **$target**, **$sender** te cutucou! Hey!"
     prod: ":point_right: **$target**, **$sender** te furou! Hey!"
-    shoot: ":gun: **$target**, você foi alvejado por **$sender** ! Rápido, chame uma ambulância!"
-    stab: ":knife: **$target**, você foi esfaqueado por **$sender**! Rápido, chame uma ambulância!"
-    tickle: ":open_hands: **$target**,  **$sender** fez cócegas em você!"
+    shoot: ":gun: **$target**, vocÃª foi alvejado por **$sender** ! RÃ¡pido, chame uma ambulÃ¢ncia!"
+    stab: ":knife: **$target**, vocÃª foi esfaqueado por **$sender**! RÃ¡pido, chame uma ambulÃ¢ncia!"
+    tickle: ":open_hands: **$target**,  **$sender** fez cÃ³cegas em vocÃª!"
   currency:
     # Available parameters:
     # $balance - the user's balance
     # $symbol  - the currency symbol
-    balance: "Você tem $balance$symbol."
+    balance: "VocÃª tem $balance$symbol."
     daily:
       # Available parameters:
       # $amount - amount collected daily
       # $symbol  - the currency symbol
-      success: "Você coletou o seu $amount$symbol diário."
+      success: "VocÃª coletou o seu $amount$symbol diÃ¡rio."
       # Available parameters:
       # $time - formatting time string until it's possible again
-      failure: "Você está fazendo isso muito rápido! Tente novamente em $time segundos."
+      failure: "VocÃª estÃ¡ fazendo isso muito rÃ¡pido! Tente novamente em $time segundos."

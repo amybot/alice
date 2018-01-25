@@ -13,13 +13,16 @@ defmodule Alice.Cmd.Music do
   def join(_name, _args, _argstr, ctx) do
     id = ctx["author"]["id"]
     user_vc = Alice.Cache.get_voice_channel id
-    self_vc = Alice.Shard.get_self_id() |> Alice.Cache.get_voice_channel
+
+    # TODO: Compare guilds too...
 
     if is_nil user_vc do
       # User not in vc
       ctx |> error(Alice.I18n.translate("en", "command.music.join.failure.user-not-in-voice"))
           |> Emily.create_message(ctx["channel_id"])
     else
+      self_state = Alice.Cache.get_self_voice_state_channel(user_vc)
+      self_vc = self_state["channel_id"] # Alice.Shard.get_self_id() |> Alice.Cache.get_voice_channel
       # User in vc, check ourself
       if is_nil self_vc do
         # We aren't in voice, probs good
@@ -48,20 +51,19 @@ defmodule Alice.Cmd.Music do
   def leave(_name, _args, _argstr, ctx) do
     id = ctx["author"]["id"]
     user_vc = Alice.Cache.get_voice_channel id
-    self_vc = Alice.Shard.get_self_id() |> Alice.Cache.get_voice_channel
 
-    if is_nil self_vc do
-      # Bot not in vc
-      ctx |> error(Alice.I18n.translate("en", "command.music.leave.failure.bot-not-in-channel"))
+    if is_nil user_vc do
+      # User not in voice, not good
+      ctx |> error(Alice.I18n.translate("en", "command.music.leave.failure.user-not-in-voice"))
           |> Emily.create_message(ctx["channel_id"])
     else
-      # Bot in vc, check user
-      if is_nil user_vc do
-        # User not in voice, not good
-        ctx |> error(Alice.I18n.translate("en", "command.music.leave.failure.user-not-in-voice"))
+      self_vc = Alice.Cache.get_self_voice_state_channel(user_vc) |> Access.get("channel_id") # Alice.Shard.get_self_id() |> Alice.Cache.get_voice_channel
+      if is_nil self_vc do
+        # Bot not in vc
+        ctx |> error(Alice.I18n.translate("en", "command.music.leave.failure.bot-not-in-channel"))
             |> Emily.create_message(ctx["channel_id"])
       else
-        # User is in voice, work out correct thing to do
+        # Bot in vc, check user
         if self_vc == user_vc do
           # User in same vc, leave
           {_hotspring, _shard} = Alice.Hotspring.close_connection ctx["author"], Integer.to_string(ctx["channel_id"])
