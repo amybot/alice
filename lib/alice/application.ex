@@ -41,27 +41,6 @@ defmodule Alice.Application do
     Alice.Hotspring.start()
     Alice.Shard.start()
 
-    Logger.info "[DB] Making database if needed..."
-    db_conf = Application.get_env(:alice, Alice.WriteRepo)
-    case Ecto.Adapters.Postgres.storage_up([
-          database: db_conf[:database],
-          username: db_conf[:username],
-          password: db_conf[:password],
-          hostname: db_conf[:hostname],
-        ]) do
-      :ok ->
-        Logger.info "[DB] The database has been created"
-      {:error, :already_up} ->
-        Logger.info "[DB] The database has already been created"
-      {:error, term} when is_binary(term) ->
-        Logger.warn "[DB] The database couldn't be created: #{term}"
-      {:error, term} ->
-        Logger.warn "[DB] The database couldn't be created: #{inspect term}"
-    end
-    Logger.info "[DB] Running database migrations..."
-    migration_res = Ecto.Migrator.run(Alice.WriteRepo, Application.app_dir(:alice, "priv/write_repo/migrations"), :up, [all: true])
-    Logger.info "[DB] Migration result: #{inspect migration_res}"
-
     Alice.CommandState.add_commands Alice.Cmd.Owner
     Alice.CommandState.add_commands Alice.Cmd.Emote
     Alice.CommandState.add_commands Alice.Cmd.Utility
