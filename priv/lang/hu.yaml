@@ -1,0 +1,115 @@
+# Main translation file for amybot.
+# en is the default locale, and as such this file will always be up-to-date
+
+# How to make a translation:
+# 1. Copy this file up to the line
+# 2. Change the file name and the 'name' value
+# 3. Translate. Do NOT replace the $whatever with its equivalent in your language.
+#    For example, "$amount" should be "$amount" regardless of language. This is so
+#    that it can be used in filling in values in translation.
+
+# The language name. Used for showing a menu. Should be localized into the
+# target language.
+name: "Magyar"
+
+# General messages that AREN'T command output.
+message:
+  no-ping-everyone: "<:xmark:392356116102774786> Szép próbálkozás."
+  # Available parameters:
+  # $command - The command's name
+  # $args - The arguments required. Is given as a list, like
+  #         "arg1, arg2, arg3"
+  missing-arg: "<:xmark:392356116102774786> $command szükség van a következő(k)re: $args"
+  no-nsfw: "<:xmark:392356116102774786> Nem használhatsz NSFW parancsot olyan szobában, ami nincs NSFWnek jelölve!"
+
+# Command i18n
+command:
+  # Descriptions for commands
+  desc:
+    # Emote commands
+    emote:
+      bap: "Megdöfni valakit."
+      chew: "Rágcsálni valakit."
+      cookie: "Sütit adni valakinek."
+      hug: "Megölelni valakit."
+      lick: "Megnyalni valakit."
+      nom: "Majszolni valakit."
+      poke: "Megbökni valakit."
+      prod: "Megszúrni valakit"
+      shoot: "Lelőni valakit."
+      stab: "Leszúrni valakit"
+      tickle: "Megcsiklandozni valakit."
+    owner:
+      eval: ""
+      test: ""
+      testvoice: ""
+    fun:
+      sb: "Egy Spongebob mém felirattal."
+      evil: "Ha megakarod mutatni az igazi gonoszt."
+      cat: "Véletlenszerű kép egy macskáról."
+      dog: "Véletlenszerű kép egy kutyáról."
+      catgirl: "Véletlenszerű macskalány (Neko). Az NSFW változat csak NSFW szobákban működik.
+      rubeface: "Egy RWBY mém."
+      fatsquare: "Kövér. Négyzet. Ez a legjobb hangulatjel valaha."
+    util:
+      ping: "pong! Ellenőrizd, hogy amybot válaszol-e."
+      help: "Hasznos információ amybot-ról."
+      invite: "amybot meghívása a szerveredre."
+    currency:
+      balance: "Ellenőrizd a számlád, vagy egy másik felhasználóét."
+      daily: "Szerezz egy kevés pénzt, naponta egyszer."
+      baltop: "Lásd a 10 leggazdagabb felhasználót."
+    music:
+      join: "amybot behívása a szobádba."
+      leave: "amybot kiléptetése a szobádból."
+      play: "Listában lévő számok lejátszása."
+      queue: "Dal hozzáadása a lejátszási listához."
+  # Available parameters:
+  # $sender - person who sent the command
+  # $target - person who was targeted
+  emote:
+    bap: ":fist: **$target**, meglettél döfve **$sender** által!"
+    chew: ":blobnom: **$target**, **$sender** éppen megrágcsált téged! Ow!"
+    cookie: ":cookie: **$target**, kaptál egy sütit **$sender**-től/tól! De aranyos!"
+    hug: ":hugging: **$target**, úgy tűnik **$sender** megölelt téged! Awwww!"
+    lick: ":stuck_out_tongue: **$target**, téged **$sender** éppen megnyalt! Fúj!"
+    nom: ":blobnom: **$target**, **$sender** éppen majszolgat téged!"
+    poke: ":point_right: **$target**, **$sender** megbökött téged! Hey!"
+    prod: ":point_right: **$target**, **$sender** megszúrt téged! Hey!"
+    shoot: ":gun: **$target**, **$sender** éppen lelőtt téged! Gyorsan, hívjatok mentőt!"
+    stab: ":knife: **$target**, le lettél szúrva **$sender** által! Gyorsan, hívjatok mentőt!"
+    tickle: ":open_hands: **$target**, meglettél csiklandozva **$sender** által!"
+  currency:
+    # Available parameters:
+    # $balance - the user's balance
+    # $symbol  - the currency symbol
+    balance: "<:check:392356124961013762> Egyenleged: $balance$symbol."
+    daily:
+      # Available parameters:
+      # $amount - amount collected daily
+      # $symbol  - the currency symbol
+      success: "<:check:392356124961013762> Sikeresen megszerezted a napi $amount$symbol -d."
+      # Available parameters:
+      # $time - formatting time string until it's possible again
+      failure: "<:xmark:392356116102774786> Túl hamar próbálkozol! Próbáld újra $time múlva."
+  music:
+    join:
+      # Available parameters:
+      # $channel - name of the channel that was joined.
+      success: "<:check:392356124961013762> Sikeres csatlakozás $channel -hoz(hez,höz)!"
+      failure:
+        user-not-in-voice: "<:xmark:392356116102774786> Nem vagy egy szobában sem! Ha nem így van, próbálj meg kilépni majd újra csatlakozni a szobához.""
+        bot-in-same-voice: "<:xmark:392356116102774786> Már bennt vagyok a szobában!"
+        bot-already-in-voice: "<:xmark:392356116102774786> Már bennt vagyok egy szobában!"
+    leave:
+      success: "<:check:392356124961013762> Sikeres kilépés $channel -ből(ból)!"
+      failure:
+        user-not-in-voice: "<:xmark:392356116102774786> Nem vagy egy szobában sem! Ha nem így van, próbálj meg kilépni majd újra csatlakozni a szobához."
+        bot-not-in-channel: "<:xmark:392356116102774786> Nem vagyok egy szobában sem!"
+        bot-in-different-channel: "<:xmark:392356116102774786> Másik szobában vagyok!"
+    queue:
+      # Available parameters:
+      # $length - Queue length
+      length: "<:check:392356124961013762> Lejátszási lista hossza: $length dal."
+      success: "<:check:392356124961013762> Sikeresen hozzáadva a lejátszási listához!"
+      failure: "<:xmark:392356116102774786> Nem lehet hozzáadni a lejátszási listához!"
