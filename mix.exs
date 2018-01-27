@@ -33,6 +33,7 @@ defmodule Alice.Mixfile do
       {:fast_yaml, "~> 1.0"},
       {:timex, "~> 3.1"},
       {:hammer, "~> 2.1.0"},
+      {:hammer_backend_redis, "~> 2.1.0"},
     ]
   end
 end

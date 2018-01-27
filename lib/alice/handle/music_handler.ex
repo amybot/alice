@@ -46,17 +46,20 @@ defmodule Alice.Music do
     info = data["info"]
     is_many = is_nil(info["author"]) and is_nil(info["identifier"]) 
                   and is_nil(info["uri"])
+    lang = data["ctx"]["channel"] |> String.to_integer 
+                                  |> Alice.Cache.channel_to_guild_id 
+                                  |> Alice.Database.get_language
     if is_many do
       data
       |> track_event_embed
-      |> title(Alice.I18n.translate("en", "command.music.queue.success"))
+      |> title(Alice.I18n.translate(lang, "command.music.queue.success"))
       |> field("", "Queued #{info["length"]} songs.", false)
       |> Emily.create_message(data["ctx"]["channel"] |> String.to_integer)
     else
       length = Duration.from_milliseconds info["length"]
       data
       |> track_event_embed
-      |> title(Alice.I18n.translate("en", "command.music.queue.success"))
+      |> title(Alice.I18n.translate(lang, "command.music.queue.success"))
       |> url(info["uri"])
       |> field("Title", info["title"], true)
       |> field("Artist", info["author"], true)

@@ -4,6 +4,46 @@ defmodule Alice.Database do
 
   @update_args [pool: DBConnection.Poolboy, upsert: true]
 
+  ##########################
+  # Guild-level operations #
+  ##########################
+
+  def get_guild(guild) do
+    guild = handle_in guild
+    Mongo.find_one :mongo, @guilds, %{"id": guild}, pool: DBConnection.Poolboy
+  end
+
+  def get_custom_prefix(guild) do
+    guild = handle_in guild
+    get_guild(guild)["custom_prefix"]
+  end
+
+  def set_custom_prefix(guild, prefix) when is_binary(prefix) do
+    guild = handle_in guild
+    Mongo.update_one :mongo, @guilds, %{"id": guild}, %{"$set": %{"custom_prefix": prefix}}, @update_args
+  end
+
+  def get_language(guild) do
+    guild = handle_in guild
+    lang = get_guild(guild)["lang"]
+    if is_nil lang do
+      Mongo.update_one :mongo, @guilds, %{"id": guild}, %{"$set": %{"lang": "en"}}, @update_args
+      "en"
+    else
+      lang
+    end
+  end
+
+  def set_language(guild, lang) when is_binary(lang) do
+    guild = handle_in guild
+    if lang in Alice.I18n.get_langs() do
+      Mongo.update_one :mongo, @guilds, %{"id": guild}, %{"$set": %{"lang": lang}}, @update_args
+      {:ok, nil}
+    else
+      {:error, :invalid_lang}
+    end
+  end
+
   #########################
   # User-level operations #
   #########################
@@ -53,8 +93,8 @@ defmodule Alice.Database do
 
   def get_xp(user) do
     user = handle_in user
-    xp = get_user(user)
-    if is_nil user do
+    xp = get_user(user)["xp"]
+    if is_nil xp do
       set_xp user, 0
       0
     else
@@ -62,30 +102,42 @@ defmodule Alice.Database do
     end
   end
 
-  def get_guild_xp(user, guild) do
-    user = handle_in user
-    # TODO: Nested documents
-  end
-
   def increment_xp(user, amount) when is_integer(amount) do
     user = handle_in user
     Mongo.update_one :mongo, @users, %{"id": user}, %{"$inc": %{"xp": amount}}, @update_args
   end
 
-  def increment_guild_xp(user, guild, amount) when is_integer(guild) and is_integer(amount) do
-    user = handle_in user
-    # TODO: Nested documents
-  end
-
   def set_xp(user, amount) when is_integer(amount) do
     user = handle_in user
-    Mongo.update_one :mongo, @users, %{"id": user}, %{"$set", %{"xp": amount}}, @update_args
+    Mongo.update_one :mongo, @users, %{"id": user}, %{"$set": %{"xp": amount}}, @update_args
   end
 
-  def set_guild_xp(user, guild, amount) when is_integer(guild) and is_integer(amount) do
-    user = handle_in user
+  # Guild levels #
+
+  def get_guild_xp(user, guild) do
+    user = handle_in(user) |> Integer.to_string
+    guild = handle_in guild
     # TODO: Nested documents
-    Mongo.update_one :mongo, @guilds, %{"id": user}, %{"$inc": %{"xp": amount}}, @update_args
+    if is_nil guild["xp"][user] do
+      set_guild_xp user, guild, 0
+      0
+    else
+      -1
+    end
+  end
+
+  def increment_guild_xp(user, guild, amount) when is_integer(amount) do
+    user = handle_in(user) |> Integer.to_string
+    guild = handle_in guild
+    Mongo.update_one :mongo, @guilds, %{"id": guild}, %{"$inc": %{"xp.#{user}": amount}}, @update_args
+    # TODO: Nested documents
+  end
+
+  def set_guild_xp(user, guild, amount) when is_integer(amount) do
+    user = handle_in(user) |> Integer.to_string
+    guild = handle_in guild
+    # TODO: Nested documents
+    Mongo.update_one :mongo, @guilds, %{"id": guild}, %{"$set": %{"xp.#{user}": amount}}, @update_args
   end
 
   # TODO: Per-guild levels #
@@ -116,21 +168,20 @@ defmodule Alice.Database do
   # Helper functions #
   ####################
 
-  defp handle_in(user) do
+  defp handle_in(entity) do
     # Can't case here :^(
-    if is_map(user) do
-      handle_in(user["id"])
+    if is_map(entity) do
+      handle_in(entity["id"])
     else
-      if is_binary(user) do
-        String.to_integer(user)
+      if is_binary(entity) do
+        String.to_integer(entity)
       else
-        if is_integer(user) do
-          user
+        if is_integer(entity) do
+          entity
         else
-          raise "Invalid DB user input: #{inspect user}"
+          raise "Invalid DB entity input: #{inspect entity}"
         end
       end
     end
   end
-
 end

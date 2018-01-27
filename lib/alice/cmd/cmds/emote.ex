@@ -18,14 +18,16 @@ defmodule Alice.Cmd.Emote do
     %{name: "tickle", desc: "command.desc.emote.tickle"},
   ]
   def emote(name, args, argstr, ctx) do
+    lang = ctx["channel_id"] |> Alice.Cache.channel_to_guild_id 
+                             |> Alice.Database.get_language
     if argstr == "" or length(args) == 0 do
       Emily.create_message ctx["channel_id"], [content: nil, 
-          embed: error(ctx, Alice.I18n.missing_arg("en", name, "target"))]
+          embed: error(ctx, Alice.I18n.missing_arg(lang, name, "target"))]
     else
       unless ctx["mention_everyone"] 
           or String.contains?(argstr, "@everyone") 
           or String.contains?(argstr, "@here") do
-        response = Alice.I18n.translate("en", "command.emote.#{name}")
+        response = Alice.I18n.translate(lang, "command.emote.#{name}")
                    |> String.replace("$sender", ctx["author"]["username"])
                    |> String.replace("$target", argstr)
         ctx
@@ -33,7 +35,7 @@ defmodule Alice.Cmd.Emote do
         |> desc(response)
         |> Emily.create_message(ctx["channel_id"])
       else
-        Emily.create_message ctx["channel_id"], [content: nil, embed: error(ctx, Alice.I18n.translate("en", "message.no-ping-everyone"))]
+        Emily.create_message ctx["channel_id"], [content: nil, embed: error(ctx, Alice.I18n.translate(lang, "message.no-ping-everyone"))]
       end
     end
   end

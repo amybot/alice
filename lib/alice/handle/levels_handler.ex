@@ -4,19 +4,19 @@ defmodule Alice.LevelsHandler do
 
   def process_message(ctx) do
     # Get guild id
-    # TODO: This may end up being very expensive...
     guild_id = Alice.Cache.channel_to_guild_id ctx["channel_id"]
 
     # Global chat levels
     unless is_ratelimited?(ctx["author"]) do
       xp = get_next_xp()
       Alice.Database.increment_xp ctx["author"], xp
+      # TODO: Global level-up messages?
     end
     # Per-guild chat levels
-    unless is_guild_ratelimited(ctx["author"], guild_id) do
+    unless is_guild_ratelimited?(ctx["author"], guild_id) do
+      prev = Alice.Database.get_guild_xp ctx["author"], guild_id
       xp = get_next_xp()
-      #Alice.Database.
-      # TODO: Make this not no-op
+      Alice.Database.increment_guild_xp ctx["author"], guild_id, xp
     end
   end
 
@@ -41,6 +41,46 @@ defmodule Alice.LevelsHandler do
       {:deny, _count} ->
         Logger.debug "Denying xp to #{inspect user, pretty: true} due to hitting global ratelimit 'chat-xp-ratelimit'."
         true
+    end
+  end
+
+  #####################
+  # Utility functions #
+  #####################
+
+  def is_level_up?(old, new) do
+    xp_to_level(old) < xp_to_level(new)
+  end
+
+  def level_to_xp(level) when is_integer(level) do
+    max 0, (100 * level) + (20 * (level - 1))
+  end
+
+  def xp_to_level(xp) when is_integer(xp) do
+    if xp < level_to_xp(1) do
+      0
+    else
+      max 0, r_xp_to_level(xp, 0)
+    end
+  end
+
+  defp r_xp_to_level(xp, level) when is_integer(xp) and is_integer(level) do
+    if xp < level_to_xp(level) do
+      level - 1
+    else
+      r_xp_to_level xp - level_to_xp(level), level + 1
+    end
+  end
+
+  def full_level_to_xp(level) when is_integer(level) do
+    r_full_level_to_xp level, 0
+  end
+
+  defp r_full_level_to_xp(level, xp) do
+    if level < 0 do
+      xp
+    else
+      r_full_level_to_xp level - 1, xp + level_to_xp(level)
     end
   end
 

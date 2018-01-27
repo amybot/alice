@@ -46,6 +46,10 @@ defmodule Alice.I18n do
     {:ok, lang}
   end
 
+  def get_langs do
+    GenServer.call __MODULE__, :get_langs
+  end
+
   def translate(lang, key) do
     Logger.debug "Got request to translate #{key} into locale #{lang}"
     GenServer.call __MODULE__, {:translate, lang, key}
@@ -55,6 +59,10 @@ defmodule Alice.I18n do
     msg = GenServer.call __MODULE__, {:translate, lang, "message.missing-arg"}
     msg |> String.replace("$command", cmd)
         |> String.replace("$args", args)
+  end
+
+  def handle_call(:get_langs, _from, state) do
+    {:reply, Map.keys(state), state}
   end
 
   def handle_call({:translate, lang, key}, _from, state) do
@@ -75,8 +83,9 @@ defmodule Alice.I18n do
           else
             {:reply, @unknown_translation, state}
           end
+        else
+          {:reply, @unknown_translation, state}
         end
-        {:reply, @unknown_translation, state}
       end
     else
       {:reply, @unknown_translation, state}

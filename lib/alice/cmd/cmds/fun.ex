@@ -8,8 +8,10 @@ defmodule Alice.Cmd.Fun do
 
   @command %{name: "sb", desc: "command.desc.fun.sb"}
   def sb(name, args, argstr, ctx) do
+    lang = ctx["channel_id"] |> Alice.Cache.channel_to_guild_id
+                             |> Alice.Database.get_language
     if length(args) == 0 do
-      err = Alice.I18n.missing_arg("en", name, "message")
+      err = Alice.I18n.missing_arg(lang, name, "message")
       Emily.create_message ctx["channel_id"], [content: nil, embed: error(ctx, err)]
     else
       response = argstr
@@ -33,7 +35,9 @@ defmodule Alice.Cmd.Fun do
   @command %{name: "evil", desc: "command.desc.fun.evil"}
   def evil(name, args, argstr, ctx) do
     if length(args) == 0 do
-      err = Alice.I18n.missing_arg("en", name, "message")
+      lang = ctx["channel_id"] |> Alice.Cache.channel_to_guild_id 
+                               |> Alice.Database.get_language
+      err = Alice.I18n.missing_arg(lang, name, "message")
       Emily.create_message ctx["channel_id"], [content: nil, embed: error(ctx, err)]
     else
       embed = ctx
@@ -58,6 +62,8 @@ defmodule Alice.Cmd.Fun do
             else
               String.capitalize(name)
             end
+    lang = ctx["channel_id"] |> Alice.Cache.channel_to_guild_id 
+                             |> Alice.Database.get_language
     # TODO: Ewwwwwwwww
     embed = if nsfw do
               if Alice.Cache.is_nsfw ctx["channel_id"] do
@@ -67,7 +73,7 @@ defmodule Alice.Cmd.Fun do
                 |> title(title)
                 |> image(url)
               else
-                err = Alice.I18n.translate("en", "message.no-nsfw")
+                err = Alice.I18n.translate(lang, "message.no-nsfw")
                 error ctx, err
               end
             else

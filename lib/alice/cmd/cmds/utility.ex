@@ -33,4 +33,36 @@ defmodule Alice.Cmd.Utility do
         |> field("Bot invite", "https://amy.chat/invite", false)
     Emily.create_message ctx["channel_id"], [content: nil, embed: e]
   end
+
+  @command %{name: "lang", desc: "command.desc.util.lang"}
+  def lang(_name, args, argstr, ctx) do
+    if length(args) == 0 do
+      langs = Alice.I18n.get_langs()
+      txt = langs
+            |> Enum.map(fn(x) -> "`#{x}` - #{Alice.I18n.translate(x, "name")}\n" end)
+            |> Enum.reduce("", fn(x, acc) -> 
+                acc <> x
+              end)
+      ctx
+      |> ctx_embed
+      |> title("Available languages")
+      |> desc(txt)
+      |> Emily.create_message( ctx["channel_id"])
+    else
+      guild = ctx["channel_id"] |> Alice.Cache.channel_to_guild_id
+      lang = Alice.Database.get_language guild
+      {res, msg} = Alice.Database.set_language guild, argstr
+      if res == :ok do
+        ctx
+        |> ctx_embed
+        |> title("Language changed!")
+        |> desc(Alice.I18n.translate(lang, "command.util.lang.success") |> String.replace("$lang", argstr))
+        |> Emily.create_message( ctx["channel_id"])
+      else
+        ctx
+        |> error(Alice.I18n.translate(lang, "command.util.lang.failure") |> String.replace("$lang", argstr))
+        |> Emily.create_message( ctx["channel_id"])
+      end
+    end
+  end
 end

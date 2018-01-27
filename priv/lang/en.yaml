@@ -56,6 +56,7 @@ command:
       ping: "pong! Check if amybot is responding."
       help: "Helpful info about amybot."
       invite: "Get the link to invite amybot to your server."
+      lang: "Change the language that amybot speaks."
     currency:
       balance: "Check your balance, or another user's balance."
       daily: "Get some money once a day."
@@ -72,6 +73,12 @@ command:
     levels:
       rank: "Check your server rank, or someone else's rank."
       profile: "Check your user profile, or someone else's profile."
+  util:
+    # Available parameters:
+    # $lang - The language name
+    lang:
+      success: "<:check:392356124961013762> Language changed to $lang."
+      failure: "<:xmark:392356116102774786> $lang is not a valid language!"
   # Available parameters:
   # $sender - person who sent the command
   # $target - person who was targeted
