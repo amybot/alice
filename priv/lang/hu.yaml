@@ -48,7 +48,7 @@ command:
       evil: "Ha megakarod mutatni az igazi gonoszt."
       cat: "Véletlenszerű kép egy macskáról."
       dog: "Véletlenszerű kép egy kutyáról."
-      catgirl: "Véletlenszerű macskalány (Neko). Az NSFW változat csak NSFW szobákban működik.
+      catgirl: "Véletlenszerű macskalány (Neko). Az NSFW változat csak NSFW szobákban működik."
       rubeface: "Egy RWBY mém."
       fatsquare: "Kövér. Négyzet. Ez a legjobb hangulatjel valaha."
     util:
@@ -98,7 +98,7 @@ command:
       # $channel - name of the channel that was joined.
       success: "<:check:392356124961013762> Sikeres csatlakozás $channel -hoz(hez,höz)!"
       failure:
-        user-not-in-voice: "<:xmark:392356116102774786> Nem vagy egy szobában sem! Ha nem így van, próbálj meg kilépni majd újra csatlakozni a szobához.""
+        user-not-in-voice: "<:xmark:392356116102774786> Nem vagy egy szobában sem! Ha nem így van, próbálj meg kilépni majd újra csatlakozni a szobához."
         bot-in-same-voice: "<:xmark:392356116102774786> Már bennt vagyok a szobában!"
         bot-already-in-voice: "<:xmark:392356116102774786> Már bennt vagyok egy szobában!"
     leave:
