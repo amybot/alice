@@ -5,13 +5,13 @@ name: "Deutsch"
 
 # General messages that AREN'T command output.
 message:
-  no-ping-everyone: "Netter versuch."
+  no-ping-everyone: "<:xmark:392356116102774786> Netter versuch."
   # Available parameters:
   # $command - The command's name
   # $args - The arguments required. Is given as a list, like
   #         "arg1, arg2, arg3"
-  missing-arg: "$command benötigt die folgenden argumente: $args"
-  no-nsfw: "Du kannst keinen NSFW command in einem Kanal der nicht als NSFW makiert is benutzen!"
+  missing-arg: "<:xmark:392356116102774786> $command benötigt die folgenden argumente: $args"
+  no-nsfw: "<:xmark:392356116102774786> Du kannst keinen NSFW command in einem Kanal der nicht als NSFW makiert is benutzen!"
 
 # Command i18n
 command:
@@ -51,9 +51,10 @@ command:
       daily: "Erhalte Geld einmal pro tag."
       baltop: "Überprüfe die 10 reichsten Nutzer."
     music:
-      join: ""
-      leave: ""
-      play: ""
+      join: "Lasse AmyBot deinen Sprach-Kanal beitreten"
+      leave: "Sorgt dafür das AmyBot den Sprach-Kanal in dem sie sich gerade befindet, zu verlasse."
+      play: "Spiele die Lieder in der Warteschlange."
+      queue: "Füge einen song der Warteschlange hinzu."
   # Available parameters:
   # $sender - person who sent the command
   # $target - person who was targeted
@@ -73,12 +74,33 @@ command:
     # Available parameters:
     # $balance - the user's balance
     # $symbol  - the currency symbol
-    balance: "Du hast $balance$symbol."
+    balance: "<:check:392356124961013762> Du hast $balance$symbol."
     daily:
       # Available parameters:
       # $amount - amount collected daily
       # $symbol  - the currency symbol
-      success: "Du hast deine Täglichen $amount$symbol erhalten."
+      success: "<:check:392356124961013762> Du hast deine Täglichen $amount$symbol erhalten."
       # Available parameters:
       # $time - formatting time string until it's possible again
-      failure: "Nicht so schnell! Versuch es in $time noch einmal."
+      failure: "<:xmark:392356116102774786> Nicht so schnell! Versuch es in $time noch einmal."
+  music:
+      join:
+        # Available parameters:
+        # $channel - name of the channel that was joined.
+      success: "<:check:392356124961013762> Erfolgreich $channel beigetreten!"
+      failure:
+        user-not-in-voice: "<:xmark:392356116102774786> Du bist in keinem Sprach-Kanal! Solltest du in einem Kanal sein, verlasse ihn und trete erneut bei."
+        bot-in-same-voice: "<:xmark:392356116102774786> Ich bin bereits in diesem Sprach-Kanal!"
+        bot-already-in-voice: "<:xmark:392356116102774786> Ich bin bereits in einem anderen Sprach-Kanal!"
+      leave:
+        success: "<:check:392356124961013762> Erfolgreich $channel verlassen!"
+        failure:
+          user-not-in-voice: "<:xmark:392356116102774786> Du bist in keinem Sprach-Kanal! Solltest du in einem Kanal sein, verlasse ihn und trete erneut bei."
+          bot-not-in-channel: "<:xmark:392356116102774786> Ich bin in keinem Sprach-Kanal!"
+          bot-in-different-channel: "<:xmark:392356116102774786> Ich bin in einem anderen Sprach-Kanal!"
+      queue:
+        # Available parameters:
+        # $length - Queue length
+        length: "<:check:392356124961013762> Länge der Warteschlange: $length songs."
+        success: "<:check:392356124961013762> Erfolgreich der Wearteschlange hinzugefügt!"
+        failure: "<:xmark:392356116102774786> Ich konnte diesen song nicht hinzufügen!"
