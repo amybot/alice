@@ -79,4 +79,36 @@ defmodule Alice.Cmd.Fun do
             end
     Emily.create_message ctx["channel_id"], [content: nil, embed: embed]
   end
+
+  @command %{name: "e", desc: "command.desc.fun.e"}
+  def emote(_name, _args, argstr, ctx) do
+    emote_idx = Regex.run ~r/-\d+$/, argstr
+    emote = unless is_nil emote_idx do
+              String.replace argstr, hd(emote_idx), ""
+            else
+              argstr
+            end
+    emotes = Alice.Database.get_emotes emote
+    res = if is_nil emote_idx do
+            Enum.random emotes
+          else
+            idx = emote_idx |> hd |> String.to_integer |> abs
+            emote_at = Enum.at emotes, idx
+            if is_nil emote_at do
+              Enum.random emotes
+            else
+              emote_at
+            end
+          end
+    title = if is_nil emote_idx do
+              ":#{emote}:"
+            else
+              ":#{emote}#{emote_idx}:"
+            end
+    ctx
+    |> ctx_embed
+    |> title(title)
+    |> image("https://cdn.discordapp.com/emojis/#{res["id"]}.png")
+    |> Emily.create_message(ctx["channel_id"])
+  end
 end

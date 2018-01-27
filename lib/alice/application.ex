@@ -57,6 +57,8 @@ defmodule Alice.Application do
     Alice.CommandState.add_commands Alice.Cmd.Fun
     Alice.CommandState.add_commands Alice.Cmd.Currency
     Alice.CommandState.add_commands Alice.Cmd.Music
+    Alice.CommandState.add_commands Alice.Cmd.Dnd
+    Alice.CommandState.add_commands Alice.Cmd.Levels
 
     Logger.info "[APP] Fully up!"
 

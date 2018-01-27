@@ -86,4 +86,11 @@ defmodule Alice.Hotspring do
     res = post! "/connection/queue/length", Poison.encode!(pkt), [{"Content-Type", "application/json"}]
     res.body
   end
+
+  def np(user, channel) when is_map(user) and is_binary(channel) do
+    guild = channel |> Alice.Cache.channel_to_guild_id
+    pkt = base(guild, channel, user)
+    res = post! "/connection/track/current", Poison.encode!(pkt), [{"Content-Type", "application/json"}]
+    res.body
+  end
 end

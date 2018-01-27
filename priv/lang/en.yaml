@@ -51,6 +51,7 @@ command:
       catgirl: "Get a random catgirl image. NSFW option only works in NSFW channels."
       rubeface: "See a RWBY meme."
       fatsquare: "It's fat. It's a square. It's the greatest emote of all time."
+      e: "Display an emote from *any* server in chat!"
     util:
       ping: "pong! Check if amybot is responding."
       help: "Helpful info about amybot."
@@ -59,11 +60,18 @@ command:
       balance: "Check your balance, or another user's balance."
       daily: "Get some money once a day."
       baltop: "See the 10 richest users."
+      pay: "Send money to someone."
     music:
       join: "Bring amybot into the channel you're in."
       leave: "Make amybot leave the voice channel it's currently in."
       play: "Start playing songs in the queue."
       queue: "Add a song to the queue." 
+      np: "Show the currently-playing song."
+    dnd:
+      roll: "Roll some dice. Uses dice notation."
+    levels:
+      rank: "Check your server rank, or someone else's rank."
+      profile: "Check your user profile, or someone else's profile."
   # Available parameters:
   # $sender - person who sent the command
   # $target - person who was targeted
@@ -92,6 +100,15 @@ command:
       # Available parameters:
       # $time - formatting time string until it's possible again
       failure: "<:xmark:392356116102774786> You're doing that too fast! Try again in $time."
+    pay:
+      # Available parameters:
+      # $amount - the invalid amount
+      failure-bad-amount: "<:xmark:392356116102774786> '$amount' is not a valid number!"
+      failure-too-poor: "<:xmark:392356116102774786> You don't have enough money for that!"
+      # Available parameters:
+      # $amount - the amount of money to send
+      # $target - the person recv.ing the money
+      success: "<:check:392356124961013762> You sent $amount to $target."
   music:
     join:
       # Available parameters:

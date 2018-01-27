@@ -64,6 +64,9 @@ defmodule Alice.Command do
               Logger.warn "Caught nil invoke for #{cmd_name}!"
             end
           end
+        else
+          # Not a command, send it elsewhere
+          Alice.LevelsHandler.process_message ctx
         end
       end
     end

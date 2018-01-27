@@ -32,6 +32,7 @@ defmodule Alice.Mixfile do
       {:annotatable, "~> 0.1.2"},
       {:fast_yaml, "~> 1.0"},
       {:timex, "~> 3.1"},
+      {:hammer, "~> 2.1.0"},
     ]
   end
 end

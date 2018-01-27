@@ -2,23 +2,6 @@
 # and its dependencies with the aid of the Mix.Config module.
 use Mix.Config
 
-config :alice, Alice.WriteRepo,
-  adapter: Ecto.Adapters.Postgres,
-  database: System.get_env("POSTGRES_DATABASE"),
-  username: System.get_env("POSTGRES_USERNAME"),
-  password: System.get_env("POSTGRES_PASSWORD"),
-  hostname: System.get_env("POSTGRES_MASTER")
-
-config :alice, Alice.ReadRepo,
-  adapter: Ecto.Adapters.Postgres,
-  database: System.get_env("POSTGRES_DATABASE"),
-  username: System.get_env("POSTGRES_USERNAME"),
-  password: System.get_env("POSTGRES_PASSWORD"),
-  hostname: System.get_env("POSTGRES_SLAVE")
-
-config :alice,
-  ecto_repos: [Alice.ReadRepo, Alice.WriteRepo]
-
 # This configuration is loaded before any dependency and is restricted
 # to this project. If another project depends on this project, this
 # file won't be loaded nor affect the parent project. For this reason,
@@ -52,3 +35,10 @@ config :sentry,
   dsn: System.get_env("SENTRY_DSN"),
   included_environments: ["prod"],
   environment_name: System.get_env("ENV_NAME") || "dev"
+
+# Ratelimits need to be shared across backends
+config :hammer,
+  backend: {Hammer.Backend.Redis,
+            [expiry_ms: 60_000 * 60 * 4,
+             redix_config: [host: System.get_env("REDIS_IP"), port: 6379, 
+                            password: System.get_env("REDIS_PASS")]]}

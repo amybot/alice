@@ -1,5 +1,6 @@
 defmodule Alice.Cmd.Music do
   use Annotatable, [:command]
+  use Timex
   import Emily.Embed
   import Alice.Util
   require Logger
@@ -107,29 +108,25 @@ defmodule Alice.Cmd.Music do
   @command %{name: "play", desc: "command.desc.music.play"}
   def play(_name, args, argstr, ctx) do
     if length(args) > 1 do
-      #embed()
-      #|> field("Music", "Attempting to play: #{argstr}", false)
-      #|> color(0xFF69B4)
-      #|> Emily.create_message(ctx["channel_id"])
       _hotspring = Alice.Hotspring.play ctx["author"], Integer.to_string(ctx["channel_id"]), argstr
-      #embed()
-      #|> field("Hotspring response", """
-      #        ```Elixir
-      #        #{inspect hotspring, pretty: true}
-      #        ```
-      #        """, false)
-      #|> color(0xFF69B4)
-      #|> Emily.create_message(ctx["channel_id"])
     else
       _hotspring = Alice.Hotspring.start_queue ctx["author"], Integer.to_string(ctx["channel_id"])
-      #embed()
-      #|> field("Hotspring response", """
-      #        ```Elixir
-      #        #{inspect hotspring, pretty: true}
-      #        ```
-      #        """, false)
-      #|> color(0xFF69B4)
-      #|> Emily.create_message(ctx["channel_id"])
     end
+  end
+
+  @command %{name: "np", desc: "command.desc.music.np"}
+  def np(_name, _args, _argstr, ctx) do
+    # TODO: Track position, visualization of time?
+    data = Alice.Hotspring.np ctx["author"], Integer.to_string(ctx["channel_id"])
+    info = data["info"]
+    length = Duration.from_milliseconds info["length"]
+    data
+    |> track_event_embed
+    |> title("Now playing")
+    |> url(info["uri"])
+    |> field("Title", info["title"], true)
+    |> field("Artist", info["author"], true)
+    |> field("Length", "#{Timex.format_duration length, :humanized}", true)
+    |> Emily.create_message(ctx["channel_id"])
   end
 end
