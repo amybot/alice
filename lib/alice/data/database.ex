@@ -1,4 +1,6 @@
 defmodule Alice.Database do
+  # TODO: Consider moving this elsewhere. Same with cache.ex
+
   @users "users"
   @guilds "guilds"
 
@@ -13,21 +15,34 @@ defmodule Alice.Database do
     Mongo.find_one :mongo, @guilds, %{"id": guild}, pool: DBConnection.Poolboy
   end
 
+  def get_guild_settings(guild) do
+    guild = handle_in guild
+    get_guild(guild)["settings"]
+  end
+
+  def get_guild_setting(guild, setting) when is_binary(setting) do
+    get_guild_settings(guild)[setting]
+  end
+
+  def set_guild_setting(guild, setting, value) when is_binary(setting) do
+    guild = handle_in guild
+    Mongo.update_one :mongo, @guilds, %{"id": guild}, %{"$set": %{"settings.#{setting}": value}}, @update_args
+  end
+
   def get_custom_prefix(guild) do
     guild = handle_in guild
-    get_guild(guild)["custom_prefix"]
+    get_guild_setting guild, "custom_prefix"
   end
 
   def set_custom_prefix(guild, prefix) when is_binary(prefix) do
-    guild = handle_in guild
-    Mongo.update_one :mongo, @guilds, %{"id": guild}, %{"$set": %{"custom_prefix": prefix}}, @update_args
+    set_guild_setting guild, "custom_prefix", prefix
   end
 
   def get_language(guild) do
     guild = handle_in guild
-    lang = get_guild(guild)["lang"]
+    lang = get_guild_setting guild, "lang"
     if is_nil lang do
-      Mongo.update_one :mongo, @guilds, %{"id": guild}, %{"$set": %{"lang": "en"}}, @update_args
+      set_language guild, "en"
       "en"
     else
       lang
@@ -35,9 +50,8 @@ defmodule Alice.Database do
   end
 
   def set_language(guild, lang) when is_binary(lang) do
-    guild = handle_in guild
     if lang in Alice.I18n.get_langs() do
-      Mongo.update_one :mongo, @guilds, %{"id": guild}, %{"$set": %{"lang": lang}}, @update_args
+      set_guild_setting guild, "lang", lang
       {:ok, nil}
     else
       {:error, :invalid_lang}
@@ -116,13 +130,12 @@ defmodule Alice.Database do
 
   def get_guild_xp(user, guild) do
     user = handle_in(user) |> Integer.to_string
-    guild = handle_in guild
-    # TODO: Nested documents
+    guild = guild |> handle_in |> get_guild
     if is_nil guild["xp"][user] do
       set_guild_xp user, guild, 0
       0
     else
-      -1
+      guild["xp"][user]
     end
   end
 

@@ -17,6 +17,9 @@ defmodule Alice.LevelsHandler do
       prev = Alice.Database.get_guild_xp ctx["author"], guild_id
       xp = get_next_xp()
       Alice.Database.increment_guild_xp ctx["author"], guild_id, xp
+      if is_level_up?(prev, prev + xp) do
+        Logger.info "Level up! #{inspect ctx["author"], pretty: true}"
+      end
     end
   end
 
