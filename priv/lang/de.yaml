@@ -11,7 +11,7 @@ message:
   # $args - The arguments required. Is given as a list, like
   #         "arg1, arg2, arg3"
   missing-arg: "<:xmark:392356116102774786> $command benötigt die folgenden argumente: $args"
-  no-nsfw: "<:xmark:392356116102774786> Du kannst keinen NSFW command in einem Kanal der nicht als NSFW makiert is benutzen!"
+  no-nsfw: "<:xmark:392356116102774786> Du kannst keinen NSFW command in einem Kanal der nicht als NSFW markiert is benutzen!"
 
 # Command i18n
 command:
