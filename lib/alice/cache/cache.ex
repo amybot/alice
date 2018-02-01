@@ -72,6 +72,10 @@ defmodule Alice.Cache do
     end
   end
 
+  def get_guild(id) when is_integer(id) do
+    Mongo.find_one :mongo_cache, @guild_cache, %{"id": id}, pool: DBConnection.Poolboy
+  end
+
   @doc """
   Convert a snowflake into a channel object
   """

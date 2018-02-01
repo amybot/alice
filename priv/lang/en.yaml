@@ -70,9 +70,11 @@ command:
       np: "Show the currently-playing song."
     dnd:
       roll: "Roll some dice. Uses dice notation."
+      dnd: "Search for all kinds of D&D info."
     levels:
       rank: "Check your server rank, or someone else's rank."
       profile: "Check your user profile, or someone else's profile."
+      levels: "Show the levels leaderboard for your server."
   util:
     # Available parameters:
     # $lang - The language name
