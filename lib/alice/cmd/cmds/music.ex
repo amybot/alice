@@ -124,15 +124,28 @@ defmodule Alice.Cmd.Music do
   def skip(_name, args, argstr, ctx) do
     lang = ctx["channel_id"] |> Alice.Cache.channel_to_guild_id 
                              |> Alice.Database.get_language
-    res = try do
-      amount = args |> hd |> String.to_integer 
+    try do
+      head = args |> hd
+      amount = unless String.downcase(head) == "all" do
+              head |> String.to_integer 
+            else
+              -1
+            end
       Alice.Hotspring.skip ctx["author"], Integer.to_string(ctx["channel_id"]), amount
-      Alice.I18n.translate(lang, "command.music.skip.success")
-      |> String.replace("$amount", hd(args))
+      res = Alice.I18n.translate(lang, "command.music.skip.success")
+          |> String.replace("$amount", hd(args))
+      ctx
+      |> ctx_embed
+      |> title("Music")
+      |> desc(res)
+      |> Emily.create_message(ctx["channel_id"])
     rescue
       e ->
-        Alice.I18n.translate(lang, "command.music.skip.failure.invalid-number")
-        |> String.replace("$amount", hd(args))
+        res = Alice.I18n.translate(lang, "command.music.skip.failure.invalid-number")
+            |> String.replace("$amount", hd(args))
+        ctx
+        |> error(res)
+        |> Emily.create_message(ctx["channel_id"])
     end
   end
 
