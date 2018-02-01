@@ -93,4 +93,11 @@ defmodule Alice.Hotspring do
     res = post! "/connection/track/current", Poison.encode!(pkt), [{"Content-Type", "application/json"}]
     res.body
   end
+
+  def skip(user, channel, amount) when is_map(user) and is_binary(channel) and is_integer(amount) do
+    guild = channel |> Alice.Cache.channel_to_guild_id
+    pkt = base(guild, channel, user) 
+          |> Map.put("skip", amount)
+    res = post! "/connection/queue/skip", Poison.encode!(pkt), [{"Content-Type", "application/json"}]
+  end
 end

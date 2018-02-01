@@ -120,6 +120,22 @@ defmodule Alice.Cmd.Music do
     end
   end
 
+  @command %{name: "skip", desc: "command.desc.music.skip"}
+  def skip(_name, args, argstr, ctx) do
+    lang = ctx["channel_id"] |> Alice.Cache.channel_to_guild_id 
+                             |> Alice.Database.get_language
+    res = try do
+      amount = args |> hd |> String.to_integer 
+      Alice.Hotspring.skip ctx["author"], Integer.to_string(ctx["channel_id"]), amount
+      Alice.I18n.translate(lang, "command.music.skip.success")
+      |> String.replace("$amount", hd(args))
+    rescue
+      e ->
+        Alice.I18n.translate(lang, "command.music.skip.failure.invalid-number")
+        |> String.replace("$amount", hd(args))
+    end
+  end
+
   @command %{name: "np", desc: "command.desc.music.np"}
   def np(_name, _args, _argstr, ctx) do
     # TODO: Track position, visualization of time?

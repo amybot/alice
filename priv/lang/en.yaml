@@ -68,6 +68,7 @@ command:
       play: "Start playing songs in the queue."
       queue: "Add a song to the queue." 
       np: "Show the currently-playing song."
+      skip: "Skip some songs, or clear the queue."
     dnd:
       roll: "Roll some dice. Uses dice notation."
       dnd: "Search for all kinds of D&D info."
@@ -133,6 +134,14 @@ command:
         user-not-in-voice: "<:xmark:392356116102774786> You're not in a voice channel! If this is incorrect, try leaving and re-joining the voice channel."
         bot-not-in-channel: "<:xmark:392356116102774786> I'm not in a voice channel!"
         bot-in-different-channel: "<:xmark:392356116102774786> I'm in a different voice channel!"
+    skip:
+      failure:
+        # Available parameters: 
+        # $amount - The (invalid) amount of songs to skip
+        invalid-number: "<:xmark:392356116102774786> '$amount' isn't a valid number!"
+      # Available parameters: 
+      # $amount - The (valid) amount of songs to skip
+      success: "<:check:392356124961013762> Skipped $amount songs"
     queue:
       # Available parameters:
       # $length - Queue length
