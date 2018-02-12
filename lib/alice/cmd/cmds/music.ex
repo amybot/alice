@@ -156,6 +156,7 @@ defmodule Alice.Cmd.Music do
   @command %{name: "np", desc: "command.desc.music.np"}
   def np(_name, _args, _argstr, ctx) do
     # TODO: Track position, visualization of time?
+    # TODO: Figure out radio :blobsweats:
     data = Alice.Hotspring.np ctx["author"], Integer.to_string(ctx["channel_id"])
     info = data["info"]
     length = Duration.from_milliseconds info["length"]
