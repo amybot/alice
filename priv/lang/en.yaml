@@ -21,6 +21,7 @@ message:
   #         "arg1, arg2, arg3"
   missing-arg: "<:xmark:392356116102774786> $command requires the following argument(s): $args"
   no-nsfw: "<:xmark:392356116102774786> You can't use an NSFW command in a non-NSFW channel!"
+  ratelimited: "<:xmark:392356116102774786> You're doing that too fast! Try again in a few seconds."
 
 # Command i18n
 command:
@@ -69,6 +70,7 @@ command:
       queue: "Add a song to the queue." 
       np: "Show the currently-playing song."
       skip: "Skip some songs, or clear the queue."
+      radio: "Change the station you're listening to."
     dnd:
       roll: "Roll some dice. Uses dice notation."
       dnd: "Search for all kinds of D&D info."
@@ -148,6 +150,10 @@ command:
       length: "<:check:392356124961013762> Queue length: $length songs."
       success: "<:check:392356124961013762> Queued successfully!"
       failure: "<:xmark:392356116102774786> Couldn't queue that!"
+    radio:
+      station-changed: "<:check:392356124961013762> Station changed: $stationName"
+      failure-no-args: "<:xmark:392356116102774786> You can't search for nothing!"
+      failure-no-station: "<:xmark:392356116102774786> No matching station!"
 
 # Don't copy anything past this line
 

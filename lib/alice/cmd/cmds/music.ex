@@ -14,8 +14,8 @@ defmodule Alice.Cmd.Music do
   def join(_name, _args, _argstr, ctx) do
     id = ctx["author"]["id"]
     user_vc = Alice.Cache.get_voice_channel id
-    lang = ctx["channel_id"] |> Alice.Cache.channel_to_guild_id 
-                             |> Alice.Database.get_language
+    guild = ctx["channel_id"] |> Alice.Cache.channel_to_guild_id 
+    lang = guild |> Alice.Database.get_language
 
     # TODO: Compare guilds too...
 
@@ -30,6 +30,10 @@ defmodule Alice.Cmd.Music do
       if is_nil self_vc do
         # We aren't in voice, probs good
         _res = Alice.Hotspring.open_connection ctx["author"], Integer.to_string(user_vc), Integer.to_string(ctx["channel_id"])
+        # Resume radio
+        station = Alice.Database.get_radio guild
+        _hotspring = Alice.Hotspring.force_play ctx["author"], Integer.to_string(ctx["channel_id"]), station["url"]
+        # Send message
         channel_name = Alice.Cache.get_channel_name user_vc
         msg = Alice.I18n.translate(lang, "command.music.join.success") |> String.replace("$channel", channel_name)
         ctx
@@ -163,5 +167,72 @@ defmodule Alice.Cmd.Music do
     |> field("Artist", info["author"], true)
     |> field("Length", "#{Timex.format_duration length, :humanized}", true)
     |> Emily.create_message(ctx["channel_id"])
+  end
+
+  @command %{name: "radio", desc: "command.desc.music.radio"}
+  def radio(_name, args, argstr, ctx) do
+    lang = ctx["channel_id"] |> Alice.Cache.channel_to_guild_id 
+                             |> Alice.Database.get_language
+    unless length(args) == 0 do
+      unless length(args) == 1 do
+        if hd(args) == "song" do
+          # Song mode
+          info = get_station :song, argstr, 10
+          handle_station lang, ctx, info
+        else
+          # Keyword mode
+          info = get_station :keyword, argstr, 10
+          handle_station lang, ctx, info
+        end
+      else
+        if (args |> hd |> String.downcase) == "random" do
+          # Random mode
+          info = get_station :random, argstr, 10
+          handle_station lang, ctx, info
+        else
+          # 1 arg, keyword it
+          info = get_station :keyword, argstr, 10
+          handle_station lang, ctx, info
+        end
+      end
+    else
+      # Nothing! :tada:
+      Emily.create_message ctx["channel_id"], [content: nil, embed: error(ctx, Alice.I18n.translate(lang, "command.music.radio.failure-no-args"))]
+    end
+  end
+
+  defp get_station(mode, search, tries) do
+    if tries == 0 do
+      %{"errors" => "ran out of tries"}
+    else
+      station = Alice.ApiClient.radio mode, search
+      if is_nil(station) or is_nil(station["url"]) 
+         or (station["url"] |> String.contains?("radionomy")) 
+         or (station["url"] |> String.contains?("listen.shoutcast")) do
+        get_station mode, search, tries - 1
+      else
+        station
+      end
+    end
+  end
+
+  defp handle_station(lang, ctx, data) when is_map(ctx) and is_map(data) do
+    if is_nil data["errors"] do
+      url = data["url"]
+      station = data["station"]
+      guild = ctx["channel_id"] |> Alice.Cache.channel_to_guild_id 
+      Alice.Database.set_radio guild, data
+      _hotspring = Alice.Hotspring.force_play ctx["author"], Integer.to_string(ctx["channel_id"]), url
+      response = Alice.I18n.translate(lang, "command.music.radio.station-changed")
+                 |> String.replace("$stationName", station["name"])
+      ctx
+      |> ctx_embed
+      |> desc(response)
+      |> Emily.create_message(ctx["channel_id"])
+    else
+      # 500 internal server error (I'm too lazy to do better! :D)
+      # so must be invalid
+      Emily.create_message ctx["channel_id"], [content: nil, embed: error(ctx, Alice.I18n.translate(lang, "command.music.radio.failure-no-station"))]
+    end
   end
 end

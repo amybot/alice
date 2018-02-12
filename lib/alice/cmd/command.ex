@@ -15,6 +15,14 @@ defmodule Alice.Command do
   function.
   """
 
+  @channel_type %{
+    "GUILD_TEXT" => 0,
+    "DM" => 1,
+    "GUILD_VOICE" => 2,
+    "GROUP_DM" => 3,
+    "GUILD_CATEGORY" => 4,
+  }
+
   import Alice.Util
   require Logger
 
@@ -27,9 +35,28 @@ defmodule Alice.Command do
     if ctx["author"]["id"] == 128316294742147072 do
       words = String.split msg, ~R/\s+/, [parts: 2, trim: true]
       cmd = words |> List.first
+      channel = Alice.Cache.get_channel ctx["channel_id"]
+      lang = Alice.Database.get_language channel["guild_id"]
       unless is_nil cmd do
-        if String.starts_with?(cmd, @prefix) do
-          cmd_name = cmd |> String.slice(String.length(@prefix)..2048)
+        custom_prefix = Alice.Database.get_custom_prefix channel["guild_id"]
+
+        {prefixed, prefix} = 
+            if String.starts_with?(cmd, @prefix) do
+              {true, @prefix}
+            else
+              unless is_nil custom_prefix do
+                if String.starts_with?(cmd, custom_prefix) do
+                  {true, custom_prefix}
+                else
+                  {false, nil}
+                end
+              else
+                {false, nil}
+              end
+            end
+
+        if prefixed do
+          cmd_name = cmd |> String.slice(String.length(prefix)..2048)
           argstr = if length(words) > 1 do
             words |> List.last
           else
@@ -41,34 +68,52 @@ defmodule Alice.Command do
             []
           end
 
-          match = Alice.CommandState.get_command cmd_name
-          unless is_nil match do
-            invoke = match[:invoke]
-            unless is_nil invoke do
-              try do
-                invoke.(cmd_name, args, argstr, ctx)
-              rescue
-                e -> 
-                  # TODO: Make this log into Sentry instead
-                  err = ctx
-                        |> error(
-                          """
-                          ```Elixir
-                          #{Exception.format(:error, e)}
-                          ```
-                          """
-                          )
-                  Emily.create_message ctx["channel_id"], [content: nil, embed: err]
+          unless is_ratelimited? ctx["author"] do
+            match = Alice.CommandState.get_command cmd_name
+            unless is_nil match do
+              invoke = match[:invoke]
+              unless is_nil invoke do
+                try do
+                  invoke.(cmd_name, args, argstr, ctx)
+                rescue
+                  e -> 
+                    # TODO: Make this log into Sentry instead
+                    err = ctx
+                          |> error(
+                            """
+                            ```Elixir
+                            #{Exception.format(:error, e)}
+                            ```
+                            """
+                            )
+                    Emily.create_message ctx["channel_id"], [content: nil, embed: err]
+                end
+              else
+                Logger.warn "Caught nil invoke for #{cmd_name}!"
               end
-            else
-              Logger.warn "Caught nil invoke for #{cmd_name}!"
             end
+          else
+            ctx
+            |> error(Alice.I18n.translate(lang, "message.ratelimited"))
+            |> Emily.create_message(ctx["channel_id"])
           end
         else
           # Not a command, send it elsewhere
           Alice.LevelsHandler.process_message ctx
         end
       end
+    end
+  end
+
+  defp is_ratelimited?(user) when is_map(user) do
+    # 1 xp gain / minute
+    case Hammer.check_rate("chat-command-ratelimit:#{inspect user["id"]}", 5000, 1) do # lol
+      {:allow, _count} ->
+        Logger.debug "Allowing chat command from #{inspect user, pretty: true} due to not hitting global ratelimit 'chat-command-ratelimit'."
+        false
+      {:deny, _limit} ->
+        Logger.debug "Denying chat command from #{inspect user, pretty: true} due to hitting global ratelimit 'chat-command-ratelimit'."
+        true
     end
   end
 end

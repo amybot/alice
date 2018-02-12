@@ -83,9 +83,8 @@ defmodule Alice.Cache do
     Mongo.find_one :mongo_cache, @channel_cache, %{"id": id}, pool: DBConnection.Poolboy
   end
 
-  # TODO: WTF IS THIS FUNCTION NAME
   def get_channel(id) when is_binary(id) do
-    id |> String.to_integer |> get_channel |> Access.get("id")
+    id |> String.to_integer |> get_channel
   end
 
   def get_channel_name(id) when is_integer(id) do

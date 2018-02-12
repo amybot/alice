@@ -58,6 +58,14 @@ defmodule Alice.Hotspring do
     res.body
   end
 
+  def force_play(user, channel, url) when is_map(user) and is_binary(channel) and is_binary(url) do
+    guild = channel |> Alice.Cache.channel_to_guild_id
+    pkt = base(guild, channel, user)
+          |> Map.put("url", url)
+    res = post! "/connection/track/play/force", Poison.encode!(pkt), [{"Content-Type", "application/json"}]
+    res.body
+  end
+
   def pause(user, channel) when is_map(user) and is_binary(channel) do
     guild = channel |> Alice.Cache.channel_to_guild_id
     pkt = base(guild, channel, user)

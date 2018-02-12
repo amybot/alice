@@ -34,6 +34,7 @@ defmodule Alice.LevelsHandler do
         Alice.Database.increment_guild_xp ctx["author"], guild_id, xp
         Logger.debug "[LVL] Incremented in DB"
         if is_level_up?(prev, prev + xp) do
+          # TODO: Handle sending messages
           Logger.debug "Level up! #{inspect ctx["author"], pretty: true}"
         end
         Logger.debug "[LVL] Guilds handled!"

@@ -24,9 +24,36 @@ defmodule Alice.Database do
     end
   end
 
+  def set_radio(guild, station) when is_map(station) do
+    guild = handle_in guild
+    Mongo.update_one :mongo, @guilds, %{"id": guild}, %{"$set": %{"radio": station}}, @update_args
+  end
+
+  def get_radio(guild) do
+    guild = handle_in guild
+    entity = get_guild guild
+    if is_nil entity["radio"] do
+      # Grab a random station
+      station = Alice.ApiClient.radio :random, ""
+      # Update the entity
+      Mongo.update_one :mongo, @guilds, %{"id": guild}, %{"$set": %{"radio": station}}, @update_args
+      # Return the station
+      station
+    else
+      entity["radio"]
+    end
+  end
+
   def get_guild_settings(guild) do
     guild = handle_in guild
-    get_guild(guild)["settings"]
+    settings = get_guild(guild)["settings"]
+    settings = if is_nil settings do
+            Mongo.update_one :mongo, @guilds, %{"id": guild}, %{"$set": %{"settings": %{}}}, @update_args
+            %{}
+          else
+            settings
+          end
+    settings
   end
 
   def get_guild_setting(guild, setting) when is_binary(setting) do
@@ -191,14 +218,10 @@ defmodule Alice.Database do
   end
 
   def set_guild_xp(user, guild, amount) when is_integer(amount) do
-    Logger.info "[set_guild_xp] input user = #{inspect user}"
-    Logger.info "[set_guild_xp] input guild = #{inspect guild}"
     user = handle_in(user) |> Integer.to_string
-    Logger.info "[set_guild_xp] user = #{inspect user}"
     guild = handle_in guild
-    Logger.info "[set_guild_xp] guild = #{inspect guild}"
     Mongo.update_one :mongo, @guilds, %{"id": guild}, %{"$set": %{"xp.#{user}": amount}}, @update_args
-    Logger.debug "Set guild to by #{inspect amount}"
+    Logger.debug "Set guild xp to #{inspect amount}"
   end
 
   ####################
