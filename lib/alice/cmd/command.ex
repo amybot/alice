@@ -115,6 +115,8 @@ defmodule Alice.Command do
                   |> error(
                     """
                     ```Elixir
+                    c: #{inspect channel, pretty: true}
+
                     #{Exception.format(:error, e)}
                     ```
                     """
