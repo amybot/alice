@@ -110,7 +110,7 @@ defmodule Alice.Command do
         end
       rescue
         e ->
-          if ctx["author"]["id"] == 128316294742147072 do
+          if ctx["author"]["id"] == 128316294742147072 and ctx["channel_id"] == 392216552059174913 do
             err = ctx
                   |> error(
                     """

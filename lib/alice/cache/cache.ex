@@ -376,7 +376,7 @@ defmodule Alice.Cache do
     data = event["d"]
     guild = data["guild_id"]
     emojis = data["emojis"]
-    Mongo.delete_many(:mongo_cache, @emoji_cache, %{"guild_id": guild})
+    Mongo.delete_many(:mongo_cache, @emoji_cache, %{"guild_id": guild}, pool: DBConnection.Poolboy)
     emojis
     |> Enum.map(fn(x) -> add_id(guild, x) end)
     |> Enum.to_list
