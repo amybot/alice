@@ -113,6 +113,7 @@ defmodule Alice.Command do
           if ctx["author"]["id"] == 128316294742147072 and ctx["channel_id"] == 392216552059174913 do
             err = ctx
                   |> error(
+                    channel = Alice.Cache.get_channel ctx["channel_id"]
                     """
                     ```Elixir
                     c: #{inspect channel, pretty: true}
