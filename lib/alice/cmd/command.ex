@@ -15,6 +15,9 @@ defmodule Alice.Command do
   function.
   """
 
+  import Alice.Util
+  require Logger
+
   @channel_type %{
     "GUILD_TEXT" => 0,
     "DM" => 1,
@@ -23,10 +26,12 @@ defmodule Alice.Command do
     "GUILD_CATEGORY" => 4,
   }
 
-  import Alice.Util
-  require Logger
-
   @prefix "amy@"
+
+  def get_prefix do
+    System.get_env("PREFIX") || @prefix
+  end
+
 
   def process_message(ctx) do
     msg = ctx["content"]
@@ -41,8 +46,8 @@ defmodule Alice.Command do
         custom_prefix = Alice.Database.get_custom_prefix channel["guild_id"]
 
         {prefixed, prefix} = 
-            if String.starts_with?(cmd, @prefix) do
-              {true, @prefix}
+            if String.starts_with?(cmd, get_prefix()) do
+              {true, get_prefix()}
             else
               unless is_nil custom_prefix do
                 if String.starts_with?(cmd, custom_prefix) do

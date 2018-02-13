@@ -19,6 +19,25 @@ defmodule Alice.Cmd.Owner do
     end
   end
 
+  @command %{name: "stats", desc: "command.desc.owner.stats", owner: true}
+  def info(_name, _args, _argstr, ctx) do
+    if ctx["author"]["id"] == 128316294742147072 do
+      otp     = :erlang.system_info :otp_release
+      machine = :erlang.system_info :machine
+      process = :erlang.system_info :process_count
+      version = :erlang.system_info :version
+      arch    = :erlang.system_info :system_architecture
+      embed()
+      |> title("stats!!")
+      |> desc("""
+              Erlang/OTP #{otp} erts-#{inspect version} #{inspect machine}
+              Running #{inspect process} PIDs on #{inspect arch}
+              """)
+      |> color(0xFF69B4)
+      |> Emily.create_message(ctx["channel_id"])
+    end
+  end
+
   @command %{name: "testvoice", desc: "command.desc.owner.testvoice", owner: true}
   def test_voice(_name, _args, _argstr, ctx) do
     if ctx["author"]["id"] == 128316294742147072 do

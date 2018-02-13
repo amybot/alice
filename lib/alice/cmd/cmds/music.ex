@@ -178,21 +178,21 @@ defmodule Alice.Cmd.Music do
       unless length(args) == 1 do
         if hd(args) == "song" do
           # Song mode
-          info = get_station :song, argstr, 10
+          info = get_station :song, argstr, 15
           handle_station lang, ctx, info
         else
           # Keyword mode
-          info = get_station :keyword, argstr, 10
+          info = get_station :keyword, argstr, 15
           handle_station lang, ctx, info
         end
       else
         if (args |> hd |> String.downcase) == "random" do
           # Random mode
-          info = get_station :random, argstr, 10
+          info = get_station :random, argstr, 15
           handle_station lang, ctx, info
         else
           # 1 arg, keyword it
-          info = get_station :keyword, argstr, 10
+          info = get_station :keyword, argstr, 15
           handle_station lang, ctx, info
         end
       end

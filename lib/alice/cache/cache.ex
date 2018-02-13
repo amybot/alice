@@ -64,6 +64,15 @@ defmodule Alice.Cache do
     end
   end
 
+  def get_member(guild_id, user_id) do
+    guild_key = "guild:#{guild_id}:members"
+    {:ok, user} = Redis.q ["HGET", guild_key, user_id]
+    case user do
+      :undefined -> nil
+      _ -> user |> Poison.decode!
+    end
+  end
+
   def get_voice_channel(snowflake) do
     state = get_voice_state snowflake
     case state do
