@@ -93,7 +93,12 @@ defmodule Alice.Cache do
   Convert a snowflake into a channel object
   """
   def get_channel(id) when is_integer(id) do
-    Mongo.find_one :mongo_cache, @channel_cache, %{"id": id}, pool: DBConnection.Poolboy
+    #Mongo.find_one :mongo_cache, @channel_cache, %{"id": id}, pool: DBConnection.Poolboy
+    {:ok, c} = Redis.q ["HGET", @channel_cache, id]
+    case c do
+      :undefined -> nil
+      _ -> c |> Poison.decode!
+    end
   end
 
   def get_channel(id) when is_binary(id) do
