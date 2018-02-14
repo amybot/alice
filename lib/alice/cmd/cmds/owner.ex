@@ -88,4 +88,31 @@ defmodule Alice.Cmd.Owner do
       end
     end
   end
+
+  @command %{name: "shell", desc: "command.desc.owner.shell", owner: true}
+  def shell(_name, args, _argstr, ctx) do
+    if ctx["author"]["id"] == 128316294742147072 do
+      try do
+        cmd = hd args
+        arg = tl args
+        {result, code} = System.cmd cmd, arg
+                         
+        Emily.create_message ctx["channel_id"], """
+                                                Output: 
+                                                ```
+                                                #{result |> String.replace(System.get_env("BOT_TOKEN"), "Nice try :)") }
+                                                Command exited with code #{inspect code}
+                                                ```
+                                                """
+      rescue
+        e -> 
+          Emily.create_message ctx["channel_id"], """
+                                                  Exception while processing: 
+                                                  ```Elixir
+                                                  #{Exception.format(:error, e) }
+                                                  ```
+                                                  """
+      end
+    end
+  end
 end
