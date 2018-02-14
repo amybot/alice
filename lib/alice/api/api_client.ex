@@ -20,7 +20,7 @@ defmodule Alice.ApiClient do
               false -> "/image/#{type}"
               true -> "/image/#{type}/nsfw"
             end
-    Poison.decode!(get!(route).body)["url"]
+    get!(route).body["url"]
   end
 
   def dnd(type, search) when is_binary(type) and is_binary(search) do
