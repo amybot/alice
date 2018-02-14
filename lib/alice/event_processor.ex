@@ -36,8 +36,8 @@ defmodule Alice.EventProcessor do
   def process do
     spawn fn -> get_event() end
     # Don't abuse redis too much
-    # Artificially limit us to 1000/s throughput
-    Process.sleep 1
+    # Artificially limit us to 100/s throughput
+    Process.sleep 10
     process()
   end
 

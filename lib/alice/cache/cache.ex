@@ -18,20 +18,24 @@ defmodule Alice.Cache do
     stored in PostgreSQL because it's the easiest way to do some of the ugly
     queries that are necessary (ex `row_number() ... PARTITION BY`-type
     queries). 
+  - Majority of stuff has been moved to using redis for my sanity. MongoDB was
+    just maximeme :fire: for this :^(
   """
+
+  # TODO: No mongo, yes redis. Moving channel / role caches
 
   alias Lace.Redis
   require Logger
 
   # MongoDB collections
   @guild_cache "guild_cache"
-  @channel_cache "channel_cache"
-  @role_cache "role_cache"
   @emoji_cache "emoji_cache"
 
   # Redis keys
-  @user_hash "users"
+  @user_hash "user_cache"
   @voice_state_hash "voice_states"
+  @channel_cache "channel_cache"
+  @role_cache "role_cache"
   # Note that our client's voice state is "special," because a bot can be in 
   # many voice channels. We don't care about bots, because we only want users
   # listening anyway. 
@@ -175,7 +179,7 @@ defmodule Alice.Cache do
     {emojis,       raw_guild} = Map.pop(raw_guild, "emojis")
     # Do some cleaning
     channels
-    |> Enum.map(fn(x) -> add_id(raw_guild, x) end)
+    |> Enum.map(fn(x) -> add_id(raw_guild, x) end)  
     |> Enum.to_list
     |> update_channels
 
@@ -184,6 +188,7 @@ defmodule Alice.Cache do
     |> Enum.to_list
     |> update_roles
 
+    Mongo.delete_many(:mongo_cache, @emoji_cache, %{"guild_id": raw_guild["id"]}, pool: DBConnection.Poolboy)
     emojis
     |> Enum.map(fn(x) -> add_id(raw_guild, x) end)
     |> Enum.to_list
@@ -267,9 +272,20 @@ defmodule Alice.Cache do
     unless length(list) == 0 do
       # So this is really bad, but apparently making a nice update_many filter 
       # will be god-awful :(
-      for snowflake <- list do
-        Mongo.update_one :mongo_cache, collection, %{"id": snowflake["id"]}, %{"$set": snowflake}, 
-          [pool: DBConnection.Poolboy, upsert: true]
+
+      # HAHAHAHAHA THIS KILLS IT
+      #for snowflake <- list do
+      #  Mongo.update_one :mongo_cache, collection, %{"id": snowflake["id"]}, %{"$set": snowflake}, 
+      #    [pool: DBConnection.Poolboy, upsert: true]
+      #end
+      if collection == @emoji_cache do
+        Mongo.insert_many :mongo_cache, @emoji_cache, list, pool: DBConnection.Poolboy
+      else
+        Redis.t fn(worker) ->
+            for state <- list do
+              Redis.q worker, ["HSET", collection, state["id"], Poison.encode!(state)]
+            end
+          end
       end
     end
   end

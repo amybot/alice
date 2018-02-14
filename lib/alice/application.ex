@@ -33,7 +33,7 @@ defmodule Alice.Application do
           port: "27017"
         ], [id: :mongo]),
       {Lace.Redis, %{
-          redis_ip: System.get_env("REDIS_IP"), redis_port: 6379, pool_size: 100, redis_pass: System.get_env("REDIS_PASS")
+          redis_ip: System.get_env("REDIS_IP"), redis_port: 6379, pool_size: 500, redis_pass: System.get_env("REDIS_PASS")
         }},
       Emily.Ratelimiter,
       Plug.Adapters.Cowboy.child_spec(:http, Alice.Router, [], [
