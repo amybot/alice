@@ -34,6 +34,7 @@ defmodule Alice.Mixfile do
       {:timex, "~> 3.1"},
       {:hammer, "~> 2.1.0"},
       {:hammer_backend_redis, "~> 2.1.0"},
+      {:xandra, "~> 0.9.2"},
     ]
   end
 end

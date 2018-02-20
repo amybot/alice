@@ -17,13 +17,26 @@ defmodule Alice.Application do
       # Yes, we really DO need two different mongo pools.
 
       # Used ONLY for cache
-      Mongo.child_spec([
-          name: :mongo_cache, 
-          database: System.get_env("CACHE_DATABASE"), 
-          pool: DBConnection.Poolboy, 
-          hostname: System.get_env("MONGO_IP"), 
-          port: "27017"
-        ], [id: :mongo_cache]),
+      #Mongo.child_spec([
+      #    name: :mongo_cache, 
+      #    database: System.get_env("CACHE_DATABASE"), 
+      #    pool: DBConnection.Poolboy, 
+      #    hostname: System.get_env("MONGO_IP"), 
+      #    port: "27017"
+      #  ], [id: :mongo_cache]),
+
+      # Really ScyllaDB, but it's API-compatible with Cassandra, so it's basically the same thing
+      %{
+        id: Xandra,
+        start: {Xandra, :start_link, [[
+            nodes: [System.get_env("CASSANDRA_NODE")], 
+            pool: DBConnection.Poolboy,
+            name: :cache
+          ]]},
+        type: :worker,
+        restart: :permanent,
+        shutdown: 500,
+      },
       # Used for real data
       Mongo.child_spec([
           name: :mongo, 
@@ -59,6 +72,10 @@ defmodule Alice.Application do
     Alice.CommandState.add_commands Alice.Cmd.Music
     Alice.CommandState.add_commands Alice.Cmd.Dnd
     Alice.CommandState.add_commands Alice.Cmd.Levels
+
+    Logger.info "[DB] Prepping Cassandra..."
+    Alice.Cache.prep_db()
+    Logger.info "[DB] Done!"
 
     Logger.info "[APP] Fully up!"
 

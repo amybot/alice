@@ -31,6 +31,9 @@ defmodule Alice.Cache do
   @guild_cache "guild_cache"
   @emoji_cache "emoji_cache"
 
+  # Cassandra stuff
+  @guilds "amybot.guilds"
+
   # Redis keys
   @user_hash "user_cache"
   @voice_state_hash "voice_states"
@@ -86,14 +89,13 @@ defmodule Alice.Cache do
   end
 
   def get_guild(id) when is_integer(id) do
-    Mongo.find_one :mongo_cache, @guild_cache, %{"id": id}, pool: DBConnection.Poolboy
+    Xandra.execute!(:cache, "SELECT * FROM #{@guilds} WHERE id = #{id}", [], pool: DBConnection.Poolboy)
   end
 
   @doc """
   Convert a snowflake into a channel object
   """
   def get_channel(id) when is_integer(id) do
-    #Mongo.find_one :mongo_cache, @channel_cache, %{"id": id}, pool: DBConnection.Poolboy
     {:ok, c} = Redis.q ["HGET", @channel_cache, id]
     case c do
       :undefined -> nil
@@ -130,7 +132,8 @@ defmodule Alice.Cache do
   end
 
   def count_guilds do
-    Mongo.count :mongo_cache, @guild_cache, %{}, pool: DBConnection.Poolboy
+    {:ok, res} = Xandra.execute!(:cache, "SELECT COUNT(*) FROM #{@guilds}", [], pool: DBConnection.Poolboy) |> Enum.fetch(0)
+    res["count"]
   end
 
   @doc """
@@ -171,6 +174,53 @@ defmodule Alice.Cache do
   #####################################################################################################################
   #####################################################################################################################
 
+  #################
+  # Set up the DB #
+  #################
+
+  def prep_db do
+    # Create the keyspace
+    kres = Xandra.execute :cache, "CREATE KEYSPACE IF NOT EXISTS amybot WITH REPLICATION = {'class' : 'SimpleStrategy', 'replication_factor' : 1}", [], pool: DBConnection.Poolboy
+    Logger.info "[DB] Keyspace: #{inspect kres, pretty: true}"
+    # Get some tables up
+    gres = Xandra.execute :cache, """
+      CREATE TABLE IF NOT EXISTS #{@guilds} (
+        id VARINT PRIMARY KEY, 
+        afk_channel_id VARINT, 
+        afk_timeout INT, 
+        application_id VARINT, 
+        default_message_notifications INT, 
+        explicit_content_filter INT, 
+        features LIST<TEXT>, 
+        icon TEXT, 
+        joined_at TEXT, 
+        large BOOLEAN, 
+        member_count INT, 
+        mfa_level INT, 
+        name TEXT, 
+        owner_id VARINT, 
+        region TEXT, 
+        splash TEXT, 
+        system_channel_id VARINT, 
+        unavailable BOOLEAN, 
+        verification_level INT
+      );
+      """, [], pool: DBConnection.Poolboy
+    Logger.info "[DB] Guild table: #{inspect gres, pretty: true}"
+    eres = Xandra.execute :cache, """
+      CREATE TABLE IF NOT EXISTS amybot.emotes (
+        id VARINT PRIMARY KEY, 
+        guild_id VARINT,
+        animated BOOLEAN,
+        managed BOOLEAN,
+        name TEXT,
+        require_colons BOOLEAN,
+        roles LIST<TEXT>
+      );
+      """, [], pool: DBConnection.Poolboy
+      Logger.info "[DB] Emotes table: #{inspect eres, pretty: true}"
+  end
+
   ####################
   # Helper functions #
   ####################
@@ -182,6 +232,7 @@ defmodule Alice.Cache do
     {voice_states, raw_guild} = Map.pop(raw_guild, "voice_states")
     {roles,        raw_guild} = Map.pop(raw_guild, "roles")
     {emojis,       raw_guild} = Map.pop(raw_guild, "emojis")
+    Logger.info "[CACHE] Got new guild: #{inspect raw_guild["id"], pretty: true}"
     # Do some cleaning
     channels
     |> Enum.map(fn(x) -> add_id(raw_guild, x) end)  
@@ -193,15 +244,13 @@ defmodule Alice.Cache do
     |> Enum.to_list
     |> update_roles
 
-    Mongo.delete_many(:mongo_cache, @emoji_cache, %{"guild_id": raw_guild["id"]}, pool: DBConnection.Poolboy)
     emojis
     |> Enum.map(fn(x) -> add_id(raw_guild, x) end)
     |> Enum.to_list
-    |> update_emojis
+    |> handle_emotes_update
 
     # Dump it into db
-    Mongo.update_one(:mongo_cache, @guild_cache, %{"id": raw_guild["id"]}, 
-      %{"$set": raw_guild}, [pool: DBConnection.Poolboy, upsert: true])
+    handle_guild_update raw_guild
     update_members_and_users raw_guild["id"], members
 
     handle_voice_states_initial voice_states
@@ -210,16 +259,87 @@ defmodule Alice.Cache do
     #insert_many "presence_cache",    presences
   end
 
+  defp generic_cassandra_upsert(table, data) when is_binary(table) and is_map(data) do
+    # Alright.
+    # This is absolutely fucking stupid.
+    # NEVER do this for code that matters.
+    # Okay?
+    # Great. Don't judge me for this. It was the best way that
+    # my 2am-brain could figure out to handle this.
+    #
+    # Now that the disclaimer is out of the way...
+    # 
+    # Basically, the problem is how inserting works. This isn't like
+    # MongoDB, where we can just toss some JSON at it and pray. Instead,
+    # we have to know the keys - and their names! - in advance. This is
+    # an issue for the "naive" way of handling it.
+    # 
+    # So how do we solve this?
+    #
+    # Simple! Rather than guessing what keys will be present, we can 
+    # just look at what's present on the object, then use those keys 
+    # to build the query.
+    # 
+    # Discord *probably* isn't trying to CQL-inject us, so this is 
+    # relatively safe, for certain values of "this is absolutely fucking
+    # stupid and you should never do this in production code."
+    #
+    # Okay? Now don't judge me, I just wanted to get this done.
+    #
+    # I'm glad you understand.
+    #
+    # At least it's documented.
+    # 
+    # TODO: This might cause :fire: if ex. unexpected keys are present.
+    # Could possibly solve this by ex. grabbing all possible columns from 
+    # the table first, but that may have unexpected overhead(?)
+
+    try do
+      # Get all the keys
+      keys = Map.keys data
+      # Get the column string
+      cols = Enum.join keys, ", "
+      # Get the value string
+      vals = keys |> Enum.map(fn(x) -> ":" <> x end) |> Enum.join(", ")
+      # And now the insanity begins! Let's pray we're not about to get
+      # CQL-injected!
+      stmt = "INSERT INTO #{table} (#{cols}) VALUES (#{vals})"
+      # Then we need to make our mapping object
+      obj = keys |> Enum.reduce(%{}, fn(x, acc) -> 
+                Map.put(acc, x, data[x])
+              end)
+      Logger.debug "[CACHE] [DB] Running query: #{stmt} with data #{inspect obj, pretty: true}"
+      prep = Xandra.prepare! :cache, stmt, pool: DBConnection.Poolboy
+      {:ok, res} = Xandra.execute :cache, prep, obj, pool: DBConnection.Poolboy
+    rescue
+      e ->
+        Logger.warn "Cassandra :fire: - #{Exception.format(:error, e, System.stacktrace())}"
+        Sentry.capture_exception e, [stacktrace: System.stacktrace()]
+    end
+  end
+
+  # wew
+  defp handle_guild_update(guild) when is_map(guild) do
+    generic_cassandra_upsert @guilds, guild
+  end
+
+  def handle_emotes_update(emotes) when is_list(emotes) do
+    try do
+      for emote <- emotes do
+        generic_cassandra_upsert "amybot.emotes", emote
+      end
+    rescue
+      e ->
+        Logger.warn "Emotes :fire: - #{Exception.format(:error, e, System.stacktrace())}"
+    end
+  end
+
   defp update_channels(channels) do
     update_many @channel_cache, channels
   end
 
   defp update_roles(roles) do
     update_many @role_cache, roles
-  end
-
-  defp update_emojis(emojis) do
-    update_many @emoji_cache, emojis
   end
 
   defp handle_self_voice_state(state) do
@@ -275,25 +395,14 @@ defmodule Alice.Cache do
 
   defp update_many(collection, list) do
     unless length(list) == 0 do
-      # So this is really bad, but apparently making a nice update_many filter 
-      # will be god-awful :(
-
-      # HAHAHAHAHA THIS KILLS IT
-      #for snowflake <- list do
-      #  Mongo.update_one :mongo_cache, collection, %{"id": snowflake["id"]}, %{"$set": snowflake}, 
-      #    [pool: DBConnection.Poolboy, upsert: true]
-      #end
-      if collection == @emoji_cache do
-        Mongo.insert_many :mongo_cache, @emoji_cache, list, pool: DBConnection.Poolboy
-      else
-        Redis.t fn(worker) ->
-            for state <- list do
-              Redis.q worker, ["HSET", collection, state["id"], Poison.encode!(state)]
-            end
+      Redis.t fn(worker) ->
+          for state <- list do
+            Redis.q worker, ["HSET", collection, state["id"], Poison.encode!(state)]
           end
-      end
+        end
     end
   end
+
 
   defp update_members_and_users(guild_id, list) do
     list
@@ -346,38 +455,15 @@ defmodule Alice.Cache do
     raw_guild = event["d"]
     # GUILD_UPDATE doesn't contain anywhere NEAR as much as GUILD_CREATE does,
     # so we only update the guild cache
-    Mongo.update_one(:mongo_cache, @guild_cache, %{"id": raw_guild["id"]}, 
-      %{"$set": raw_guild}, [pool: DBConnection.Poolboy, upsert: true])
+    handle_guild_update raw_guild
   end
 
   def process_event(%{"t" => "GUILD_DELETE"} = event) do
     guild = event["d"]
     guild_key = "guild:#{guild["id"]}:members"
     if is_nil guild["unavailable"] do
-      Mongo.delete_one(:mongo_cache, @guild_cache, %{"id": guild["id"]}, [pool: DBConnection.Poolboy])
-      #{:ok, ids} = Redis.q ["HKEYS", guild_key]
+      Xandra.execute! :cache, "DELETE FROM #{@guilds} WHERE id = #{guild["id"]}"
       Redis.q ["DEL", guild_key]
-      #ids
-      #|> Enum.chunk_every(1000)
-      #|> Enum.each(fn(chunk) -> 
-      #    Redis.t fn(worker) -> 
-      #        for id <- chunk do
-      #          Redis.q worker, ["ZINCRBY", @user_zset, -1, id]
-      #        end
-      #      end
-      #  end)
-      ## Garbage-collect when an id runs out of references
-      #{:ok, prunable_users} = Redis.q ["ZRANGEBYSCORE", @user_zset, "-inf", 0]
-      #Redis.q ["ZREMRANGEBYSCORE", @user_zset, "-inf", 0]
-      #prunable_users
-      #|> Enum.chunk_every(1000)
-      #|> Enum.each(fn(chunk) -> 
-      #    Redis.t fn(worker) -> 
-      #        for id <- chunk do
-      #          Redis.q worker, ["HDEL", @user_hash, id]
-      #        end
-      #      end
-      #  end)
     end
   end
 
@@ -390,34 +476,34 @@ defmodule Alice.Cache do
   end
 
   def process_event(%{"t" => "CHANNEL_DELETE"} = event) do
-    Mongo.delete_one(:mongo_cache, @channel_cache, %{"id": event["d"]["id"]}, [pool: DBConnection.Poolboy])
+    Redis.q ["HDEL", @channel_cache, event["d"]["id"]]
   end
 
   def process_event(%{"t" => "GUILD_EMOJIS_UPDATE"} = event) do
     data = event["d"]
     guild = data["guild_id"]
     emojis = data["emojis"]
-    Mongo.delete_many(:mongo_cache, @emoji_cache, %{"guild_id": guild}, pool: DBConnection.Poolboy)
     emojis
     |> Enum.map(fn(x) -> add_id(guild, x) end)
     |> Enum.to_list
-    |> update_emojis
+    |> handle_emotes_update
   end
 
   def process_event(%{"t" => "GUILD_MEMBER_ADD"} = event) do
     member = event["d"]
     update_members_and_users member["guild_id"], [member]
-    Mongo.update_one(:mongo_cache, @guild_cache, %{"id": member["guild_id"]}, 
-      %{"$inc": %{"member_count": 1}}, [pool: DBConnection.Poolboy, upsert: true])
+    # TODO: Cassandrafy
+    #Mongo.update_one(:mongo_cache, @guild_cache, %{"id": member["guild_id"]}, 
+    #  %{"$inc": %{"member_count": 1}}, [pool: DBConnection.Poolboy, upsert: true])
   end
 
   def process_event(%{"t" => "GUILD_MEMBER_REMOVE"} = event) do
     guild_id = event["d"]["guild_id"]
     user = event["d"]["user"]
     Redis.q ["HDEL", "guild:#{guild_id}:members", user["id"]]
-    #Redis.q ["ZINCRBY", @user_zset, -1, user["id"]]
-    Mongo.update_one(:mongo_cache, @guild_cache, %{"id": guild_id}, 
-      %{"$inc": %{"member_count": -1}}, [pool: DBConnection.Poolboy, upsert: true])
+    # TODO: Cassandrafy
+    #Mongo.update_one(:mongo_cache, @guild_cache, %{"id": guild_id}, 
+    #  %{"$inc": %{"member_count": -1}}, [pool: DBConnection.Poolboy, upsert: true])
   end
 
   def process_event(%{"t" => "GUILD_MEMBER_UPDATE"} = event) do
@@ -439,7 +525,7 @@ defmodule Alice.Cache do
   end
 
   def process_event(%{"t" => "GUILD_ROLE_DELETE"} = event) do
-    Mongo.delete_one(:mongo_cache, @role_cache, %{"id": event["d"]["role_id"]}, [pool: DBConnection.Poolboy])
+    Redis.q ["HDEL", @role_cache, event["d"]["role_id"]]
   end
 
   def process_event(%{"t" => "PRESENCE_UPDATE"} = _event) do
