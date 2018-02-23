@@ -24,11 +24,11 @@ defmodule Alice.Cmd.Fun do
                         end
                     %{idx: acc[:idx] + 1, res: acc[:res] <> c}
                   end)
-      embed = ctx
-              |> ctx_embed
-              |> title(response[:res])
-              |> image("http://i0.kym-cdn.com/entries/icons/original/000/022/940/spongebobicon.jpg")
-      Emily.create_message ctx["channel_id"], [content: nil, embed: embed]
+      ctx
+      |> ctx_embed
+      |> title(response[:res])
+      |> image("http://i0.kym-cdn.com/entries/icons/original/000/022/940/spongebobicon.jpg")
+      |> Emily.create_message(ctx["channel_id"])
     end
   end
 
@@ -38,13 +38,13 @@ defmodule Alice.Cmd.Fun do
       lang = ctx["channel_id"] |> Alice.Cache.channel_to_guild_id 
                                |> Alice.Database.get_language
       err = Alice.I18n.missing_arg(lang, name, "message")
-      Emily.create_message ctx["channel_id"], [content: nil, embed: error(ctx, err)]
+      Emily.n_create_message ctx["channel_id"], [content: nil, embed: error(ctx, err)]
     else
-      embed = ctx
-              |> ctx_embed
-              |> title(argstr)
-              |> image("https://i.imgur.com/YZWYH2w.png")
-      Emily.create_message ctx["channel_id"], [content: nil, embed: embed]
+      ctx
+      |> ctx_embed
+      |> title(argstr)
+      |> image("https://i.imgur.com/YZWYH2w.png")
+      |> Emily.create_message(ctx["channel_id"])
     end
   end
 
@@ -83,7 +83,7 @@ defmodule Alice.Cmd.Fun do
               |> title(title)
               |> image(url)
             end
-    Emily.create_message ctx["channel_id"], [content: nil, embed: embed]
+    Emily.n_create_message ctx["channel_id"], [content: nil, embed: embed]
   end
 
   @command %{name: "e", desc: "command.desc.fun.e"}

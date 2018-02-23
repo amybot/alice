@@ -14,15 +14,11 @@ defmodule Alice.Cache do
   - Data is stored in a couple different places, for a variety of reasons. 
     These mostly boil down to speed vs. querying-ability. For example, I 
     generally just want to get user data quickly, whereas with guilds I may 
-    want to get an aggregate count across all guilds. Emotes specifically are 
-    stored in PostgreSQL because it's the easiest way to do some of the ugly
-    queries that are necessary (ex `row_number() ... PARTITION BY`-type
-    queries). 
+    want to get an aggregate count across all guilds. 
   - Majority of stuff has been moved to using redis for my sanity. MongoDB was
-    just maximeme :fire: for this :^(
+    just maximeme :fire: for this :^( The rest of it is in Cassandra because
+    Cassandra is bae <3
   """
-
-  # TODO: No mongo, yes redis. Moving channel / role caches
 
   alias Lace.Redis
   require Logger
@@ -88,8 +84,10 @@ defmodule Alice.Cache do
     end
   end
 
-  def get_guild(id) when is_integer(id) do
-    Xandra.execute!(:cache, "SELECT * FROM #{@guilds} WHERE id = #{id}", [], pool: DBConnection.Poolboy)
+  def get_guild(id) when is_integer(id) or is_binary(id) do
+    # C Q L I N J E C T I O N
+    {:ok, res} = Xandra.execute!(:cache, "SELECT * FROM #{@guilds} WHERE id = #{id}", [], pool: DBConnection.Poolboy) |> Enum.fetch(0)
+    res
   end
 
   @doc """
@@ -218,7 +216,8 @@ defmodule Alice.Cache do
         roles LIST<TEXT>
       );
       """, [], pool: DBConnection.Poolboy
-      Logger.info "[DB] Emotes table: #{inspect eres, pretty: true}"
+    Logger.info "[DB] Emotes table: #{inspect eres, pretty: true}"
+    # TODO: Need a counter table for members, because Cassandra is a meme like that  
   end
 
   ####################
@@ -233,6 +232,17 @@ defmodule Alice.Cache do
     {roles,        raw_guild} = Map.pop(raw_guild, "roles")
     {emojis,       raw_guild} = Map.pop(raw_guild, "emojis")
     Logger.info "[CACHE] Got new guild: #{inspect raw_guild["id"], pretty: true}"
+
+    # Keep backwards compatibility x-x
+    raw_guild = raw_guild
+                |> Map.put("owner_id", String.to_integer(raw_guild["owner_id"]))
+                |> Map.put("id", String.to_integer(raw_guild["id"]))
+    raw_guild = unless is_nil raw_guild["system_channel_id"] do
+                  raw_guild |> Map.put("system_channel_id", String.to_integer(raw_guild["system_channel_id"]))
+                else
+                  raw_guild
+                end
+
     # Do some cleaning
     channels
     |> Enum.map(fn(x) -> add_id(raw_guild, x) end)  
@@ -246,6 +256,8 @@ defmodule Alice.Cache do
 
     emojis
     |> Enum.map(fn(x) -> add_id(raw_guild, x) end)
+    # Keep backwards compatibility x-x
+    |> Enum.map(fn(x) -> %{x | "id" => String.to_integer(x["id"])} end)
     |> Enum.to_list
     |> handle_emotes_update
 
@@ -318,7 +330,6 @@ defmodule Alice.Cache do
     end
   end
 
-  # wew
   defp handle_guild_update(guild) when is_map(guild) do
     generic_cassandra_upsert @guilds, guild
   end

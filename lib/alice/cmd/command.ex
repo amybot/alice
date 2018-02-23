@@ -36,8 +36,10 @@ defmodule Alice.Command do
   def process_message(ctx) do
     msg = ctx["content"]
 
+    Logger.debug "Got message: #{inspect ctx, pretty: true}"
     # TODO: Remove this, testing-only~
-    if ctx["author"]["id"] == 128316294742147072 do
+    if ctx["author"]["id"] == "128316294742147072" do
+      Logger.debug "Got owner msg"
       try do
         words = String.split msg, ~R/\s+/, [parts: 2, trim: true]
         cmd = words |> List.first
@@ -62,6 +64,7 @@ defmodule Alice.Command do
               end
 
           if prefixed do
+            Logger.debug "Prefixed msg"
             cmd_name = cmd |> String.slice(String.length(prefix)..2048)
             argstr = if length(words) > 1 do
               words |> List.last
@@ -80,10 +83,12 @@ defmodule Alice.Command do
                 invoke = match[:invoke]
                 unless is_nil invoke do
                   try do
+                    Logger.debug "Invoking #{cmd_name}"
                     invoke.(cmd_name, args, argstr, ctx)
                   rescue
                     e -> 
                       # TODO: Make this log into Sentry instead
+                      Logger.warn Exception.format(:error, e)
                       err = ctx
                             |> error(
                               """

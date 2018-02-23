@@ -5,7 +5,7 @@ defmodule Alice.Cmd.Owner do
 
   @command %{name: "test", desc: "command.desc.owner.test", owner: true}
   def test(_name, _args, _argstr, ctx) do
-    if ctx["author"]["id"] == 128316294742147072 do
+    if ctx["author"]["id"] == "128316294742147072" do
       embed()
       |> title("test embed!")
       |> desc("this is a test")
@@ -21,7 +21,7 @@ defmodule Alice.Cmd.Owner do
 
   @command %{name: "stats", desc: "command.desc.owner.stats", owner: true}
   def info(_name, _args, _argstr, ctx) do
-    if ctx["author"]["id"] == 128316294742147072 do
+    if ctx["author"]["id"] == "128316294742147072" do
       otp     = :erlang.system_info :otp_release
       machine = :erlang.system_info :machine
       process = :erlang.system_info :process_count
@@ -40,7 +40,7 @@ defmodule Alice.Cmd.Owner do
 
   @command %{name: "testvoice", desc: "command.desc.owner.testvoice", owner: true}
   def test_voice(_name, _args, _argstr, ctx) do
-    if ctx["author"]["id"] == 128316294742147072 do
+    if ctx["author"]["id"] == "128316294742147072" do
       guild = "206584013790380033"
       channel = "206584013790380034"
       embed()
@@ -65,13 +65,13 @@ defmodule Alice.Cmd.Owner do
 
   @command %{name: "eval", desc: "command.desc.owner.eval", owner: true}
   def eval(_name, _args, argstr, ctx) do
-    if ctx["author"]["id"] == 128316294742147072 do
+    if ctx["author"]["id"] == "128316294742147072" do
       try do
         {result, _} = argstr
                       |> String.replace("BOT_TOKEN", "NOT_BOT_TOKEN")
                       |> Code.eval_string([ctx: ctx])
                          
-        Emily.create_message ctx["channel_id"], """
+        Emily.n_create_message ctx["channel_id"], """
                                                 Output: 
                                                 ```Elixir
                                                 #{inspect(result) |> String.replace(System.get_env("BOT_TOKEN"), "Nice try :)") }
@@ -79,7 +79,8 @@ defmodule Alice.Cmd.Owner do
                                                 """
       rescue
         e -> 
-          Emily.create_message ctx["channel_id"], """
+          Logger.warn "#{Exception.format(:error, e)}"
+          Emily.n_create_message ctx["channel_id"], """
                                                   Exception while processing: 
                                                   ```Elixir
                                                   #{Exception.format(:error, e) }
@@ -91,13 +92,13 @@ defmodule Alice.Cmd.Owner do
 
   @command %{name: "shell", desc: "command.desc.owner.shell", owner: true}
   def shell(_name, args, _argstr, ctx) do
-    if ctx["author"]["id"] == 128316294742147072 do
+    if ctx["author"]["id"] == "128316294742147072" do
       try do
         cmd = hd args
         arg = tl args
         {result, code} = System.cmd cmd, arg
                          
-        Emily.create_message ctx["channel_id"], """
+        Emily.n_create_message ctx["channel_id"], """
                                                 Output: 
                                                 ```
                                                 #{result |> String.replace(System.get_env("BOT_TOKEN"), "Nice try :)") }
@@ -106,7 +107,7 @@ defmodule Alice.Cmd.Owner do
                                                 """
       rescue
         e -> 
-          Emily.create_message ctx["channel_id"], """
+          Emily.n_create_message ctx["channel_id"], """
                                                   Exception while processing: 
                                                   ```Elixir
                                                   #{Exception.format(:error, e) }

@@ -31,10 +31,11 @@ defmodule Alice.Mixfile do
       {:poolboy, ">= 0.0.0"},
       {:annotatable, "~> 0.1.2"},
       {:fast_yaml, "~> 1.0"},
-      {:timex, "~> 3.1"},
+      {:timex, "~> 3.2"},
       {:hammer, "~> 2.1.0"},
       {:hammer_backend_redis, "~> 2.1.0"},
       {:xandra, "~> 0.9.2"},
+      {:gnat, "~> 0.4.1"},
     ]
   end
 end
