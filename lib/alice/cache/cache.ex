@@ -224,6 +224,14 @@ defmodule Alice.Cache do
   # Helper functions #
   ####################
 
+  defp destring_field(map, field) do
+    unless is_nil map[field] do
+      map |> Map.put(field, String.to_integer(map[field]))
+    else
+      map
+    end
+  end
+
   defp update_guild(raw_guild) do
     {channels,     raw_guild} = Map.pop(raw_guild, "channels")
     {members,      raw_guild} = Map.pop(raw_guild, "members")
@@ -239,11 +247,9 @@ defmodule Alice.Cache do
                 |> Map.put("id", String.to_integer(raw_guild["id"]))
                 |> Map.put("afk_channel_id", String.to_integer(raw_guild["afk_channel_id"]))
                 |> Map.put("application_id", String.to_integer(raw_guild["application_id"]))
-    raw_guild = unless is_nil raw_guild["system_channel_id"] do
-                  raw_guild |> Map.put("system_channel_id", String.to_integer(raw_guild["system_channel_id"]))
-                else
-                  raw_guild
-                end
+    raw_guild = raw_guild |> destring_field("system_channel_id") 
+                          |> destring_field("afk_channel_id") 
+                          |> destring_field("application_id")
 
     # Do some cleaning
     channels
