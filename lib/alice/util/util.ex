@@ -9,6 +9,8 @@ defmodule Alice.Util do
   import Bitwise
   require OptionParser
 
+  use Timex
+
   def guild_to_shard(guild_id, shard_count) do
     (guild_id >>> 22) |> rem(shard_count)
   end
@@ -25,6 +27,20 @@ defmodule Alice.Util do
   """
   def now_s do
     :os.system_time :second
+  end
+
+  @doc """
+  Returns a Timex today
+  """
+  def today do
+    Timex.today()
+  end
+
+  @doc """
+  Like today/0, but with a day added to it
+  """
+  def tomorrow do
+    Timex.add today(), Duration.from_days(1)
   end
 
   def avatar(user) do

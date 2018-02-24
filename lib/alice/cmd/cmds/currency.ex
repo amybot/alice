@@ -50,19 +50,21 @@ defmodule Alice.Cmd.Currency do
     user = ctx["author"]
     lang = ctx["channel_id"] |> Alice.Cache.channel_to_guild_id 
                              |> Alice.Database.get_language
-    {:ok, last_time} = Redis.q ["GET", "user:#{user["id"]}:daily-cooldown"]
-    last_time = unless last_time == :undefined do
-                  last_time |> String.to_integer
+    {:ok, last_time} = Alice.Database.get_last_daily user
+    last_time = unless is_nil last_time do
+                  Timex.parse(last_time, "{ISO:Extended}")
                 else
-                  0
+                  Timex.epoch()
                 end
 
-    now = now_s()
-    cooldown = now - last_time
+    now = today()
+    then = tomorrow()
+    diff = Timex.diff now, last_time, :days
 
-    if cooldown >= @day_s do
+    if diff == 1 or Timex.day(now) - Timex.day(last_time) == 1 do
       _new_user = Alice.Database.increment_balance user, @daily_amount
-      Redis.q ["SET", "user:#{user["id"]}:daily-cooldown", now]
+      #Redis.q ["SET", "user:#{user["id"]}:daily-cooldown", now]
+      Alice.Database.set_last_daily user, Timex.format(last_time, "{ISO:Extended}")
       res = Alice.I18n.translate(lang, "command.currency.daily.success")
             |> String.replace("$amount", "#{inspect @daily_amount}")
             |> String.replace("$symbol", @symbol)
@@ -72,8 +74,9 @@ defmodule Alice.Cmd.Currency do
       |> desc(res)
       |> Emily.create_message(ctx["channel_id"])
     else
-      time_left = (last_time + @day_s) - now
-      duration = Duration.from_seconds time_left
+      #time_left = (last_time + @day_s) - now
+      #duration = Duration.from_seconds time_left
+      duration = Timex.diff then, Timex.now(), :seconds
       res = Alice.I18n.translate(lang, "command.currency.daily.failure")
             |> String.replace("$time", "#{Timex.format_duration duration, :humanized}")
       Emily.n_create_message ctx["channel_id"], [content: nil, embed: error(ctx, res)]
