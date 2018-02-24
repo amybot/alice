@@ -253,14 +253,6 @@ defmodule Alice.Cache do
   end
 
   defp update_guild(raw_guild) do
-    {channels,     raw_guild} = Map.pop(raw_guild, "channels")
-    {members,      raw_guild} = Map.pop(raw_guild, "members")
-    {_presences,   raw_guild} = Map.pop(raw_guild, "presences")
-    {voice_states, raw_guild} = Map.pop(raw_guild, "voice_states")
-    {roles,        raw_guild} = Map.pop(raw_guild, "roles")
-    {emojis,       raw_guild} = Map.pop(raw_guild, "emojis")
-    Logger.info "[CACHE] Got new guild: #{inspect raw_guild["id"], pretty: true}"
-
     # Keep backwards compatibility x-x
     raw_guild = raw_guild
                 |> Map.put("owner_id", String.to_integer(raw_guild["owner_id"]))
@@ -272,6 +264,14 @@ defmodule Alice.Cache do
                           |> destring_field("widget_channel_id")
                           |> falsify_field("embed_enabled")
                           |> falsify_field("widget_enabled")
+    
+    {channels,     raw_guild} = Map.pop(raw_guild, "channels")
+    {members,      raw_guild} = Map.pop(raw_guild, "members")
+    {_presences,   raw_guild} = Map.pop(raw_guild, "presences")
+    {voice_states, raw_guild} = Map.pop(raw_guild, "voice_states")
+    {roles,        raw_guild} = Map.pop(raw_guild, "roles")
+    {emojis,       raw_guild} = Map.pop(raw_guild, "emojis")
+    Logger.info "[CACHE] Got new guild: #{inspect raw_guild["id"], pretty: true}"
 
     # Do some cleaning
     channels
