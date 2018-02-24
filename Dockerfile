@@ -15,4 +15,5 @@ RUN mix deps.get
 
 RUN mix compile
 
-CMD epmd -daemon && mix run --no-halt
+#CMD epmd -daemon && mix run --no-halt
+ENTRYPOINT ["/app/run.sh"]
