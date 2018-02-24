@@ -23,11 +23,11 @@ defmodule Alice.Cmd.Currency do
     res = Alice.I18n.translate(lang, "command.currency.balance")
           |> String.replace("$balance", "#{inspect bal}")
           |> String.replace("$symbol", @symbol)
-    embed = ctx
-            |> ctx_embed
-            |> title("Balance")
-            |> desc(res)
-    Emily.create_message ctx["channel_id"], [content: nil, embed: embed]
+    ctx
+    |> ctx_embed
+    |> title("Balance")
+    |> desc(res)
+    |> Emily.create_message(ctx["channel_id"])
   end
 
   @command %{name: "baltop", desc: "command.desc.currency.baltop"}
@@ -38,11 +38,11 @@ defmodule Alice.Cmd.Currency do
                         # TODO: This is gross
                         acc <> "#{discord_entity["username"]}##{discord_entity["discriminator"]}: #{inspect x["balance"]}" <> @symbol <> "\n"
                       end)
-    embed = ctx
-            |> ctx_embed
-            |> title("Top balances")
-            |> desc("#{balance_str}")
-    Emily.create_message ctx["channel_id"], [content: nil, embed: embed]
+    ctx
+    |> ctx_embed
+    |> title("Top balances")
+    |> desc("#{balance_str}")
+    |> Emily.create_message(ctx["channel_id"])
   end
 
   @command %{name: "daily", desc: "command.desc.currency.daily"}
@@ -66,17 +66,17 @@ defmodule Alice.Cmd.Currency do
       res = Alice.I18n.translate(lang, "command.currency.daily.success")
             |> String.replace("$amount", "#{inspect @daily_amount}")
             |> String.replace("$symbol", @symbol)
-      embed = ctx
-              |> ctx_embed
-              |> title("Daily")
-              |> desc(res)
-      Emily.create_message ctx["channel_id"], [content: nil, embed: embed]
+      ctx
+      |> ctx_embed
+      |> title("Daily")
+      |> desc(res)
+      |> Emily.create_message(ctx["channel_id"])
     else
       time_left = (last_time + @day_s) - now
       duration = Duration.from_seconds time_left
       res = Alice.I18n.translate(lang, "command.currency.daily.failure")
             |> String.replace("$time", "#{Timex.format_duration duration, :humanized}")
-      Emily.create_message ctx["channel_id"], [content: nil, embed: error(ctx, res)]
+      Emily.n_create_message ctx["channel_id"], [content: nil, embed: error(ctx, res)]
     end
   end
 
@@ -85,13 +85,13 @@ defmodule Alice.Cmd.Currency do
     lang = ctx["channel_id"] |> Alice.Cache.channel_to_guild_id 
                              |> Alice.Database.get_language
     if length(args) < 2 do
-      Emily.create_message ctx["channel_id"], [content: nil, 
+      Emily.n_create_message ctx["channel_id"], [content: nil, 
           embed: error(ctx, Alice.I18n.missing_arg(lang, name, "target, amount"))]
     else
       mentions = ctx["mentions"]
       if length(mentions) == 0 do
         # TODO: Is this actually a good error for this? 
-        Emily.create_message ctx["channel_id"], [content: nil, 
+        Emily.n_create_message ctx["channel_id"], [content: nil, 
           embed: error(ctx, Alice.I18n.missing_arg(lang, name, "target, amount"))]
       else
         # amy!pay <target> <amount>
@@ -115,14 +115,14 @@ defmodule Alice.Cmd.Currency do
             |> Emily.create_message(ctx["channel_id"])
           else
             error_msg = Alice.I18n.translate(lang, "command.currency.pay.failure-too-poor")
-            Emily.create_message ctx["channel_id"], [content: nil, embed: error(ctx, error_msg)]
+            Emily.n_create_message ctx["channel_id"], [content: nil, embed: error(ctx, error_msg)]
           end
         rescue
           _ -> 
             # Probably not an integer, error out
             error_msg = Alice.I18n.translate(lang, "command.currency.pay.failure-bad-amount")
                         |> String.replace("$amount", amount)
-            Emily.create_message ctx["channel_id"], [content: nil, embed: error(ctx, error_msg)]
+            Emily.n_create_message ctx["channel_id"], [content: nil, embed: error(ctx, error_msg)]
         end
       end
     end

@@ -24,7 +24,7 @@ defmodule Alice.ApiClient do
   end
 
   def dnd(type, search) when is_binary(type) and is_binary(search) do
-    post!("/dnd/#{type}", Poison.encode!(%{"search" => search}), [{"Content-Type", "application/json"}]).body |> Poison.decode!
+    post!("/dnd/#{type}", Poison.encode!(%{"search" => search}), [{"Content-Type", "application/json"}]).body# |> Poison.decode!
   end
 
   def radio(mode, search) do

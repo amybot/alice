@@ -14,16 +14,18 @@ defmodule Alice.Application do
       # Starts a worker by calling: Alice.Worker.start_link(arg)
       # {Alice.Worker, arg},
       {Alice.I18n, []},
-      # Yes, we really DO need two different mongo pools.
-
-      # Used ONLY for cache
-      Mongo.child_spec([
-          name: :mongo_cache, 
-          database: System.get_env("CACHE_DATABASE"), 
-          pool: DBConnection.Poolboy, 
-          hostname: System.get_env("MONGO_IP"), 
-          port: "27017"
-        ], [id: :mongo_cache]),
+      # Really ScyllaDB, but it's API-compatible with Cassandra, so it's basically the same thing
+      %{
+        id: Xandra,
+        start: {Xandra, :start_link, [[
+            nodes: [System.get_env("CASSANDRA_NODE")], 
+            pool: DBConnection.Poolboy,
+            name: :cache
+          ]]},
+        type: :worker,
+        restart: :permanent,
+        shutdown: 500,
+      },
       # Used for real data
       Mongo.child_spec([
           name: :mongo, 
@@ -32,6 +34,7 @@ defmodule Alice.Application do
           hostname: System.get_env("MONGO_IP"), 
           port: "27017"
         ], [id: :mongo]),
+      {Gnat, %{host: System.get_env("NATS_IP")}},
       {Lace.Redis, %{
           redis_ip: System.get_env("REDIS_IP"), redis_port: 6379, pool_size: 500, redis_pass: System.get_env("REDIS_PASS")
         }},
@@ -40,12 +43,14 @@ defmodule Alice.Application do
           dispatch: dispatch(),
           port: get_port(),
         ]),
+      {Alice.EventProcessor, %{}}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Alice.Supervisor]
     {:ok, sup_res} = Supervisor.start_link(children, opts)
+
     Logger.info "[API] Starting API clients..."
     Alice.ApiClient.start()
     Alice.Hotspring.start()
@@ -60,10 +65,26 @@ defmodule Alice.Application do
     Alice.CommandState.add_commands Alice.Cmd.Dnd
     Alice.CommandState.add_commands Alice.Cmd.Levels
 
+    Logger.info "[DB] Prepping Cassandra..."
+    Alice.Cache.prep_db()
+    Logger.info "[DB] Done!"
+
+    # For some fucking reason, gnat is retarded and won't actually 
+    # register a name for itself, it seems? x-x
+    # This forcibly registers it to :gnat to work around this
+    # queer behaviour.
+    for {name, pid, _, _} <- Supervisor.which_children(sup_res) do
+      if name == Gnat do
+        Process.register pid, :gnat
+      end
+    end
+
+    send Alice.EventProcessor, :setup
+
     Logger.info "[APP] Fully up!"
 
     # Start the processing task
-    Task.async fn -> Alice.EventProcessor.process() end
+    #Task.async fn -> Alice.EventProcessor.process() end
 
     {:ok, sup_res}
   end
