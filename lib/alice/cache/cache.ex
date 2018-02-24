@@ -245,8 +245,6 @@ defmodule Alice.Cache do
     raw_guild = raw_guild
                 |> Map.put("owner_id", String.to_integer(raw_guild["owner_id"]))
                 |> Map.put("id", String.to_integer(raw_guild["id"]))
-                |> Map.put("afk_channel_id", String.to_integer(raw_guild["afk_channel_id"]))
-                |> Map.put("application_id", String.to_integer(raw_guild["application_id"]))
     raw_guild = raw_guild |> destring_field("system_channel_id") 
                           |> destring_field("afk_channel_id") 
                           |> destring_field("application_id")
