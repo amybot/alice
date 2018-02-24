@@ -201,7 +201,11 @@ defmodule Alice.Cache do
         splash TEXT, 
         system_channel_id VARINT, 
         unavailable BOOLEAN, 
-        verification_level INT
+        verification_level INT,
+        embed_enabled BOOLEAN,
+        embed_channel_id VARINT,
+        widget_enabled BOOLEAN,
+        widget_channel_id VARINT,
       );
       """, [], pool: DBConnection.Poolboy
     Logger.info "[DB] Guild table: #{inspect gres, pretty: true}"
@@ -228,7 +232,23 @@ defmodule Alice.Cache do
     unless is_nil map[field] do
       map |> Map.put(field, String.to_integer(map[field]))
     else
+      map |> Map.put(field, nil)
+    end
+  end
+
+  defp denil_field(map, field) do
+    unless is_nil map[field] do
       map
+    else
+      map |> Map.put(field, nil)
+    end
+  end
+
+  defp falsify_field(map, field) do
+    unless is_nil map[field] do
+      map
+    else
+      map |> Map.put(field, false)
     end
   end
 
@@ -248,6 +268,10 @@ defmodule Alice.Cache do
     raw_guild = raw_guild |> destring_field("system_channel_id") 
                           |> destring_field("afk_channel_id") 
                           |> destring_field("application_id")
+                          |> destring_field("embed_channel_id")
+                          |> destring_field("widget_channel_id")
+                          |> falsify_field("embed_enabled")
+                          |> falsify_field("widget_enabled")
 
     # Do some cleaning
     channels
