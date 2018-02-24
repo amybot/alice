@@ -479,7 +479,7 @@ defmodule Alice.Cache do
     guild = event["d"]
     guild_key = "guild:#{guild["id"]}:members"
     if is_nil guild["unavailable"] do
-      Xandra.execute! :cache, "DELETE FROM #{@guilds} WHERE id = #{guild["id"]}"
+      Xandra.execute! :cache, "DELETE FROM #{@guilds} WHERE id = #{guild["id"]}", pool: DBConnection.Poolboy
       Redis.q ["DEL", guild_key]
     end
   end
