@@ -264,7 +264,7 @@ defmodule Alice.Cache do
                           |> destring_field("widget_channel_id")
                           |> falsify_field("embed_enabled")
                           |> falsify_field("widget_enabled")
-    
+
     {channels,     raw_guild} = Map.pop(raw_guild, "channels")
     {members,      raw_guild} = Map.pop(raw_guild, "members")
     {_presences,   raw_guild} = Map.pop(raw_guild, "presences")
@@ -482,6 +482,10 @@ defmodule Alice.Cache do
 
   defp add_id(guild, entity) when is_integer(guild) do
     entity |> Map.put("guild_id", guild)
+  end
+
+  defp add_id(guild, entity) when is_binary(guild) do
+    add_id String.to_integer(guild), entity
   end
 
   ##############################
