@@ -65,13 +65,14 @@ defmodule Alice.EventProcessor do
   def handle_info({:msg, %{body: body, topic: topic, reply_to: reply_to} = content}, state) do
     #Logger.info "Got message: #{inspect body, pretty: true}"
     event = body |> Poison.decode!
-    try do
-
-      process_event event["t"], event["d"]
-    rescue
-      e -> Sentry.capture_exception e, [stacktrace: System.stacktrace()]
-    end
-  {:noreply, state}
+    spawn fn -> 
+        try do
+          process_event event["t"], event["d"]
+        rescue
+          e -> Sentry.capture_exception e, [stacktrace: System.stacktrace()]
+        end
+      end
+    {:noreply, state}
   end
 
   def handle_info(unknown_message, state) do
