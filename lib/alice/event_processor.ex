@@ -62,6 +62,10 @@ defmodule Alice.EventProcessor do
     {:noreply, %{state | subscription: subscription}}
   end
 
+  def handle_info({pid, {:ok, hash}}, state) do
+    {:noreply, state}
+  end
+
   def handle_info({:msg, %{body: body, topic: topic, reply_to: reply_to} = content}, state) do
     #Logger.info "Got message: #{inspect body, pretty: true}"
     event = body |> Poison.decode!
