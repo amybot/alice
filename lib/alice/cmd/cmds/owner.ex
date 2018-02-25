@@ -19,6 +19,20 @@ defmodule Alice.Cmd.Owner do
     end
   end
 
+  @command %{name: "sk", desc: "command.desc.owner.sk", owner: true}
+  def sketchify(_name, _args, argstr, ctx) do
+    if ctx["author"]["id"] == "128316294742147072" do
+      res = HTTPoison.post!("https://verylegit.link/sketchify", "long_url=" <> argstr, [{"content-type", "application/x-www-form-urlencoded; charset=UTF-8"}]).body
+      embed()
+      |> title("Pretty sketchy amirite")
+      |> desc("""
+              https://#{res}
+              """)
+      |> color(0xFF69B4)
+      |> Emily.create_message(ctx["channel_id"])
+    end
+  end
+
   @command %{name: "stats", desc: "command.desc.owner.stats", owner: true}
   def info(_name, _args, _argstr, ctx) do
     if ctx["author"]["id"] == "128316294742147072" do
