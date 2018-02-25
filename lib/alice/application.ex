@@ -69,17 +69,7 @@ defmodule Alice.Application do
     Alice.Cache.prep_db()
     Logger.info "[DB] Done!"
 
-    # For some fucking reason, gnat is retarded and won't actually 
-    # register a name for itself, it seems? x-x
-    # This forcibly registers it to :gnat to work around this
-    # queer behaviour.
-    for {name, pid, _, _} <- Supervisor.which_children(sup_res) do
-      if name == Gnat do
-        Process.register pid, :gnat
-      end
-    end
-
-    send Alice.EventProcessor, :setup
+    send Alice.EventProcessor, {:find_nats, sup_res}
 
     Logger.info "[APP] Fully up!"
 

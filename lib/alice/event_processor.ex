@@ -50,16 +50,41 @@ defmodule Alice.EventProcessor do
     #{:ok, subscription} = Gnat.sub :gnat, self(), "event-queue", [queue_group: "event-queue"]
 
     state = %{
-      subscription: nil
+      subscription: nil,
     }
 
     {:ok, state}
   end
 
   def handle_info(:setup, state) do
+    # For some fucking reason, gnat is retarded and won't actually 
+    # register a name for itself, it seems? x-x
+    # This forcibly registers it to :gnat to work around this
+    # queer behaviour.
     {:ok, subscription} = Gnat.sub :gnat, self(), "event-queue", [queue_group: "event-queue"]
     Logger.info "[EVENT] Subscribed to NATS"
     {:noreply, %{state | subscription: subscription}}
+  end
+
+  def handle_info({:find_nats, sup}, state) do
+    loc = Process.whereis :gnat
+    if is_nil loc do
+      Logger.warn "[EVENT] We lost nats! Let's find it again..."
+      Process.sleep 1000
+      if Enum.member? Process.registered(), :gnat do
+        Logger.warn "[EVENT] Cleaning up old nats registry..."
+        Process.unregister :gnat
+      end
+      for {name, pid, _, _} <- Supervisor.which_children(sup) do
+        if name == Gnat do
+          Process.register pid, :gnat
+          Logger.warn "[EVENT] We found nats! Woo!"
+        end
+      end
+      Process.send_after self(), :setup, 100
+    end
+    Process.send_after self(), {:find_nats, sup}, 100
+    {:noreply, state}
   end
 
   def handle_info({:msg, %{body: body, topic: topic, reply_to: reply_to} = content}, state) do
@@ -76,6 +101,7 @@ defmodule Alice.EventProcessor do
   end
 
   def handle_info(unknown_message, state) do
+    Logger.info "Unknown message: #{inspect unknown_message, pretty: true}"
     {:noreply, state}
   end
 
