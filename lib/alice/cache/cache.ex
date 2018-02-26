@@ -122,7 +122,7 @@ defmodule Alice.Cache do
   end
 
   def channel_to_guild_id(channel) when is_binary(channel) do
-    channel |> String.to_integer |> channel_to_guild_id |> Integer.to_string
+    channel |> String.to_integer |> channel_to_guild_id
   end
 
   def channel_to_guild_id(channel) when is_map(channel) do
