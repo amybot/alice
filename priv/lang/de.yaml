@@ -12,6 +12,7 @@ message:
   #         "arg1, arg2, arg3"
   missing-arg: "<:xmark:392356116102774786> $command benötigt die folgenden argumente: $args"
   no-nsfw: "<:xmark:392356116102774786> Du kannst keinen NSFW command in einem Kanal der nicht als NSFW markiert is benutzen!"
+  ratelimited: "<:xmark:392356116102774786> Du machst das zu schnell! Versuche es in ein paar Sekunden noch einmal."
 
 # Command i18n
 command:
@@ -42,19 +43,38 @@ command:
       catgirl: "Erhalte ein zufälliges Katzen-Mädchen bild. NSFW option funktioniert nur in Kanälen die als NSFW makiert sind."
       rubeface: "Erhalte ein RWBY meme."
       fatsquare: "Es its fett. Es ist ein Kasten. Es ist das beste Emoticon aller Zeiten."
+      e: "Zeige ein Emote von *irgendeinem* Server im Chat!"
     util:
       ping: "pong! Überprüfe ob amybot reagiert."
       help: "Hilfreiche Informationen über amybot."
       invite: "Erhalte einen Link zum Einladen von amybot."
+      lang: "Ändere die Sprache, die amybot spricht."
     currency:
       balance: "Überprüfe deine oder jemanden anderes Balance."
       daily: "Erhalte Geld einmal pro tag."
       baltop: "Überprüfe die 10 reichsten Nutzer."
+      pay: "Schicke Geld an jemanden."
     music:
       join: "Lasse AmyBot deinen Sprach-Kanal beitreten"
       leave: "Sorgt dafür das AmyBot den Sprach-Kanal in dem sie sich gerade befindet, zu verlasse."
       play: "Spiele die Lieder in der Warteschlange."
       queue: "Füge einen song der Warteschlange hinzu."
+      np: "Zeigt das aktuell spielende Lied an."
+      skip: "Überspringe einige Titel oder lösche die Warteschlange."
+      radio: "Änder den Sender, den du gerade hörst."
+    dnd:
+      roll: "Roll some dice. Uses dice notation."
+      dnd: "Search for all kinds of D&D info."
+    levels:
+      rank: "Überprüfe deinen Serverrang oder den Rang eines anderen."
+      profile: "Überprüfe dein Benutzerprofil oder das Profil eines anderen Benutzers."
+      levels: "Zeige die Level-Bestenliste für deinen Server an."
+  util:
+    # Available parameters:
+    # $lang - The language name
+    lang:
+      success: "<:check:392356124961013762> Sprache zu $lang geändert."
+      failure: "<:xmark:392356116102774786> $lang ist keine gültige Sprache!"
   # Available parameters:
   # $sender - person who sent the command
   # $target - person who was targeted
@@ -78,15 +98,31 @@ command:
     daily:
       # Available parameters:
       # $amount - amount collected daily
-      # $symbol  - the currency symbol
+      # $symbol - the currency symbol
       success: "<:check:392356124961013762> Du hast deine Täglichen $amount$symbol erhalten."
       # Available parameters:
       # $time - formatting time string until it's possible again
       failure: "<:xmark:392356116102774786> Nicht so schnell! Versuch es in $time noch einmal."
-  music:
-      join:
+      streak:
+        reset: "Dein Streak wurde zurückgesetzt, weil du deine täglichen Credits $symbol schon länger nicht erhalten hast."
         # Available parameters:
-        # $channel - name of the channel that was joined.
+        # $amount - amount collected daily
+        # $symbol - the currency symbol
+        # $streak - how long the player's streak is
+        streak: "Du erhälst einen bonus von $amount$symbol weil du eine Streak von $streak hast! Nice!"
+    pay:
+      # Available parameters:
+      # $amount - the invalid amount
+      failure-bad-amount: "<:xmark:392356116102774786> '$amount' ist keine gültige Nummer!"
+      failure-too-poor: "<:xmark:392356116102774786> Du hast dafür nicht genug Geld!"
+      # Available parameters:
+      # $amount - the amount of money to send
+      # $target - the person recv.ing the money
+      success: "<:check:392356124961013762> Du hast $amount an $target gesendet."
+  music:
+    join:
+      # Available parameters:
+      # $channel - name of the channel that was joined.
       success: "<:check:392356124961013762> Erfolgreich $channel beigetreten!"
       failure:
         user-not-in-voice: "<:xmark:392356116102774786> Du bist in keinem Sprach-Kanal! Solltest du in einem Kanal sein, verlasse ihn und trete erneut bei."
@@ -98,9 +134,21 @@ command:
           user-not-in-voice: "<:xmark:392356116102774786> Du bist in keinem Sprach-Kanal! Solltest du in einem Kanal sein, verlasse ihn und trete erneut bei."
           bot-not-in-channel: "<:xmark:392356116102774786> Ich bin in keinem Sprach-Kanal!"
           bot-in-different-channel: "<:xmark:392356116102774786> Ich bin in einem anderen Sprach-Kanal!"
-      queue:
+    skip:
+      failure:
         # Available parameters:
-        # $length - Queue length
+        # $amount - The (invalid) amount of songs to skip
+        invalid-number: "<:xmark:392356116102774786> '$amount' ist keine gültige Nummer!"
+      # Available parameters:
+      # $amount - The (valid) amount of songs to skip
+      success: "<:check:392356124961013762> $amount Songs übersprungen."
+    queue:
+      # Available parameters:
+      # $length - Queue length
         length: "<:check:392356124961013762> Länge der Warteschlange: $length songs."
         success: "<:check:392356124961013762> Erfolgreich der Wearteschlange hinzugefügt!"
         failure: "<:xmark:392356116102774786> Ich konnte diesen song nicht hinzufügen!"
+    radio:
+      station-changed: "<:check:392356124961013762> Radio-Station geändert: $stationName"
+      failure-no-args: "<:xmark:392356116102774786> Du kannst nicht nach nichts suchen!"
+      failure-no-station: "<:xmark:392356116102774786> Keine passende Station!"
