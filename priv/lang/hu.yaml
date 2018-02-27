@@ -21,6 +21,7 @@ message:
   #         "arg1, arg2, arg3"
   missing-arg: "<:xmark:392356116102774786> $command szükség van a következő(k)re: $args"
   no-nsfw: "<:xmark:392356116102774786> Nem használhatsz NSFW parancsot olyan szobában, ami nincs NSFWnek jelölve!"
+  ratelimited: "<:xmark:392356116102774786> Túl gyorsan csinálod! Próbáld újra pár másodperc múlva."
 
 # Command i18n
 command:
@@ -48,22 +49,41 @@ command:
       evil: "Ha megakarod mutatni az igazi gonoszt."
       cat: "Véletlenszerű kép egy macskáról."
       dog: "Véletlenszerű kép egy kutyáról."
-      catgirl: "Véletlenszerű macskalány (Neko). Az NSFW változat csak NSFW szobákban működik."
+      catgirl: "Véletlenszerű macskalány. Az NSFW változat csak NSFW szobákban működik."
       rubeface: "Egy RWBY mém."
       fatsquare: "Kövér. Négyzet. Ez a legjobb hangulatjel valaha."
+      e: "Emoji küldése *bármely* szerverről!"
     util:
       ping: "pong! Ellenőrizd, hogy amybot válaszol-e."
       help: "Hasznos információ amybot-ról."
       invite: "amybot meghívása a szerveredre."
+      lang: "Váltás amybot nyelvei közt."
     currency:
       balance: "Ellenőrizd a számlád, vagy egy másik felhasználóét."
       daily: "Szerezz egy kevés pénzt, naponta egyszer."
-      baltop: "Lásd a 10 leggazdagabb felhasználót."
+      baltop: "A 10 leggazdagabb felhasználó."
+      pay: "Pénz küldése valakinek."
     music:
       join: "amybot behívása a szobádba."
       leave: "amybot kiléptetése a szobádból."
       play: "Listában lévő számok lejátszása."
       queue: "Dal hozzáadása a lejátszási listához."
+      np: "Jelenleg játszott zene."
+      skip: "Zeneszámok átugrása, vagy az egész lista törlése."
+      radio: "Jelenlegi rádió adó váltás."
+    dnd:
+      roll: "Kocka dobása. Kocka jelölést használ."
+      dnd: "Keresés rengeteg fajta D&D információ közt."
+    levels:
+      rank: "Szerver helyezésed, vagy bárki más helyezése."
+      profile: "Szerver profilod, vagy bárki más profilja."
+      levels: "A szervered szintbeli toplistája."
+  util:
+    # Available parameters:
+    # $lang - The language name
+    lang:
+      success: "<:check:392356124961013762> Nyelv átváltva $lang-ra."
+      failure: "<:xmark:392356116102774786> $lang nem egy elérhető nyelv!"
   # Available parameters:
   # $sender - person who sent the command
   # $target - person who was targeted
@@ -92,6 +112,22 @@ command:
       # Available parameters:
       # $time - formatting time string until it's possible again
       failure: "<:xmark:392356116102774786> Túl hamar próbálkozol! Próbáld újra $time múlva."
+      streak:
+        reset: "A szériádnak vége, mivel nem szerezted meg a napi $symbol -d egy ideje."
+        # Available parameters:
+        # $amount - amount collected daily
+        # $symbol - the currency symbol
+        # $streak - how long the player's streak is
+        streak: "Bónusz $amount$symbol -t kaptál, mert $streak szériád van! Remek!"
+    pay:
+      # Available parameters:
+      # $amount - the invalid amount
+      failure-bad-amount: "<:xmark:392356116102774786> '$amount' nem egy valós szám!"
+      failure-too-poor: "<:xmark:392356116102774786> Nincs elég pénzed hozzá!"
+      # Available parameters:
+      # $amount - the amount of money to send
+      # $target - the person recv.ing the money
+      success: "<:check:392356124961013762> Elküldtél $amount -t $target -nek."
   music:
     join:
       # Available parameters:
@@ -107,9 +143,21 @@ command:
         user-not-in-voice: "<:xmark:392356116102774786> Nem vagy egy szobában sem! Ha nem így van, próbálj meg kilépni majd újra csatlakozni a szobához."
         bot-not-in-channel: "<:xmark:392356116102774786> Nem vagyok egy szobában sem!"
         bot-in-different-channel: "<:xmark:392356116102774786> Másik szobában vagyok!"
+    skip:
+      failure:
+        # Available parameters:
+        # $amount - The (invalid) amount of songs to skip
+        invalid-number: "<:xmark:392356116102774786> '$amount' nem egy valós szám!"
+      # Available parameters:
+      # $amount - The (valid) amount of songs to skip
+      success: "<:check:392356124961013762> $amount szám átugorva."
     queue:
       # Available parameters:
       # $length - Queue length
       length: "<:check:392356124961013762> Lejátszási lista hossza: $length dal."
       success: "<:check:392356124961013762> Sikeresen hozzáadva a lejátszási listához!"
       failure: "<:xmark:392356116102774786> Nem lehet hozzáadni a lejátszási listához!"
+    radio:
+      station-changed: "<:check:392356124961013762> Rádió átváltva: $stationName"
+      failure-no-args: "<:xmark:392356116102774786> Nem kereshetsz semmire!"
+      failure-no-station: "<:xmark:392356116102774786> Nincs egyező adó!"
