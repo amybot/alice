@@ -19,8 +19,7 @@ defmodule Alice.Cmd.Currency do
 
   @command %{name: "balance", desc: "command.desc.currency.balance"}
   def balance(_name, _args, _argstr, ctx) do
-    lang = ctx["channel_id"] |> Alice.Cache.channel_to_guild_id 
-                             |> Alice.Database.get_language
+    lang = ctx["lang"]
     bal = Alice.Database.balance ctx["author"]
     res = Alice.I18n.translate(lang, "command.currency.balance")
           |> String.replace("$balance", "#{inspect bal}")
@@ -49,8 +48,7 @@ defmodule Alice.Cmd.Currency do
   @command %{name: "daily", desc: "command.desc.currency.daily"}
   def daily(_name, _args, _argstr, ctx) do
     user = ctx["author"]
-    lang = ctx["channel_id"] |> Alice.Cache.channel_to_guild_id 
-                             |> Alice.Database.get_language
+    lang = ctx["lang"]
     last_time = Alice.Database.get_last_daily user
     last_time = unless is_nil last_time do
                   {:ok, time} = Timex.parse(last_time, "{ISO:Extended}")
@@ -114,8 +112,7 @@ defmodule Alice.Cmd.Currency do
 
   @command %{name: "pay", desc: "command.desc.currency.pay"}
   def pay(name, args, _argstr, ctx) do
-    lang = ctx["channel_id"] |> Alice.Cache.channel_to_guild_id 
-                             |> Alice.Database.get_language
+    lang = ctx["lang"]
     if length(args) < 2 do
       Emily.n_create_message ctx["channel_id"], [content: nil, 
           embed: error(ctx, Alice.I18n.missing_arg(lang, name, "target, amount"))]

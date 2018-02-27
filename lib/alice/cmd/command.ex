@@ -45,6 +45,7 @@ defmodule Alice.Command do
         cmd = words |> List.first
         channel = Alice.Cache.get_channel ctx["channel_id"]
         lang = Alice.Database.get_language channel["guild_id"]
+        ctx = ctx |> Map.put("lang", lang)
         unless is_nil cmd do
           custom_prefix = Alice.Database.get_custom_prefix channel["guild_id"]
 

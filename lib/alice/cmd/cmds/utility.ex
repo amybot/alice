@@ -50,7 +50,7 @@ defmodule Alice.Cmd.Utility do
       |> Emily.create_message( ctx["channel_id"])
     else
       guild = ctx["channel_id"] |> Alice.Cache.channel_to_guild_id
-      lang = Alice.Database.get_language guild
+      lang = ctx["lang"]
       {res, msg} = Alice.Database.set_language guild, argstr
       if res == :ok do
         ctx

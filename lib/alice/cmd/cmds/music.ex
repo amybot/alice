@@ -15,7 +15,7 @@ defmodule Alice.Cmd.Music do
     id = ctx["author"]["id"]
     user_vc = Alice.Cache.get_voice_channel id
     guild = ctx["channel_id"] |> Alice.Cache.channel_to_guild_id 
-    lang = guild |> Alice.Database.get_language
+    lang = ctx["lang"]
 
     # TODO: Compare guilds too...
 
@@ -58,8 +58,7 @@ defmodule Alice.Cmd.Music do
   def leave(_name, _args, _argstr, ctx) do
     id = ctx["author"]["id"]
     user_vc = Alice.Cache.get_voice_channel id
-    lang = ctx["channel_id"] |> Alice.Cache.channel_to_guild_id 
-                             |> Alice.Database.get_language
+    lang = ctx["lang"]
 
     if is_nil user_vc do
       # User not in voice, not good
@@ -94,8 +93,7 @@ defmodule Alice.Cmd.Music do
 
   @command %{name: "queue", desc: "command.desc.music.queue"}
   def queue(_name, args, argstr, ctx) do
-    lang = ctx["channel_id"] |> Alice.Cache.channel_to_guild_id 
-                             |> Alice.Database.get_language
+    lang = ctx["lang"]
     if length(args) > 0 do
       if hd(args) |> String.downcase() == "length" do
         res = Alice.Hotspring.queue_length ctx["author"], Integer.to_string(ctx["channel_id"])
@@ -126,8 +124,7 @@ defmodule Alice.Cmd.Music do
 
   @command %{name: "skip", desc: "command.desc.music.skip"}
   def skip(_name, args, argstr, ctx) do
-    lang = ctx["channel_id"] |> Alice.Cache.channel_to_guild_id 
-                             |> Alice.Database.get_language
+    lang = ctx["lang"]
     try do
       head = args |> hd
       amount = unless String.downcase(head) == "all" do
@@ -172,8 +169,7 @@ defmodule Alice.Cmd.Music do
 
   @command %{name: "radio", desc: "command.desc.music.radio"}
   def radio(_name, args, argstr, ctx) do
-    lang = ctx["channel_id"] |> Alice.Cache.channel_to_guild_id 
-                             |> Alice.Database.get_language
+    lang = ctx["lang"]
     unless length(args) == 0 do
       unless length(args) == 1 do
         if hd(args) == "song" do

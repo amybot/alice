@@ -18,8 +18,7 @@ defmodule Alice.Cmd.Emote do
     %{name: "tickle", desc: "command.desc.emote.tickle"},
   ]
   def emote(name, args, argstr, ctx) do
-    lang = ctx["channel_id"] |> Alice.Cache.channel_to_guild_id 
-                             |> Alice.Database.get_language
+    lang = ctx["lang"]
     if argstr == "" or length(args) == 0 do
       Emily.create_message ctx["channel_id"], [content: nil, 
           embed: error(ctx, Alice.I18n.missing_arg(lang, name, "target"))]
