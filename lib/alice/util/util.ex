@@ -33,7 +33,11 @@ defmodule Alice.Util do
   Returns a Timex today
   """
   def today do
-    Timex.today()
+    Timex.today() |> Timex.to_datetime
+  end
+
+  def now do
+    Timex.now()
   end
 
   @doc """

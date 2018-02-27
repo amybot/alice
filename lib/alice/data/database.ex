@@ -175,6 +175,27 @@ defmodule Alice.Database do
     get_user(user)["currency"]["last_daily"]
   end
 
+  def set_currency_daily_streak(user, streak) when is_integer(streak) do
+    user = handle_in user
+    Mongo.update_one :mongo, @users, %{"id": user}, %{"$set": %{"currency.streak": streak}}, @update_args
+  end
+
+  def incr_currency_daily_streak(user) do
+    user = handle_in user
+    Mongo.update_one :mongo, @users, %{"id": user}, %{"$inc": %{"currency.streak": 1}}, @update_args
+  end
+
+  def get_currency_daily_streak(user) do
+    user = handle_in user
+    streak = get_user(user)["currency"]["streak"]
+    if is_nil streak do
+      set_currency_daily_streak user, 0
+      0
+    else
+      streak
+    end
+  end
+
   #####################
   # Levels operations #
   #####################

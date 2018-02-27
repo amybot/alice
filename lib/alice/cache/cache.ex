@@ -220,6 +220,7 @@ defmodule Alice.Cache do
         roles LIST<TEXT>
       );
       """, [], pool: DBConnection.Poolboy
+    enires = Xandra.execute :cache, "CREATE INDEX IF NOT EXISTS emote_names ON amybot.emotes (name);", [], pool: DBConnection.Poolboy 
     Logger.info "[DB] Emotes table: #{inspect eres, pretty: true}"
     # TODO: Need a counter table for members, because Cassandra is a meme like that  
   end

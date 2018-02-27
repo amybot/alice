@@ -107,11 +107,18 @@ command:
     daily:
       # Available parameters:
       # $amount - amount collected daily
-      # $symbol  - the currency symbol
+      # $symbol - the currency symbol
       success: "<:check:392356124961013762> You collect your daily $amount$symbol."
       # Available parameters:
       # $time - formatting time string until it's possible again
       failure: "<:xmark:392356116102774786> You're doing that too fast! Try again in $time."
+      streak:
+        reset: "Your streak was reset because you haven't collected your daily $symbol in a while."
+        # Available parameters:
+        # $amount - amount collected daily
+        # $symbol - the currency symbol
+        # $streak - how long the player's streak is
+        streak: "You got a bonus $amount$symbol for being on a streak of $streak! Awesome!"
     pay:
       # Available parameters:
       # $amount - the invalid amount

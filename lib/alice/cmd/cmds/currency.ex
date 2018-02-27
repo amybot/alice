@@ -11,6 +11,8 @@ defmodule Alice.Cmd.Currency do
   # TODO: Set up anti-cheating stuff in here eventually
 
   @daily_amount 100
+  @daily_bonus 10
+
   @day_s 86400
 
   @symbol ":white_flower:"
@@ -34,9 +36,8 @@ defmodule Alice.Cmd.Currency do
   def baltop(_name, _args, _argstr, ctx) do
     balance_str = Alice.Database.balance_top
                   |> Enum.reduce("", fn(x, acc) -> 
-                        discord_entity = x["id"] |> Cache.get_user 
-                        # TODO: This is gross
-                        acc <> "#{discord_entity["username"]}##{discord_entity["discriminator"]}: #{inspect x["balance"]}" <> @symbol <> "\n"
+                        du = x["id"] |> Cache.get_user 
+                        acc <> "#{du["username"]}##{du["discriminator"]}: #{x["balance"]}" <> @symbol <> "\n"
                       end)
     ctx
     |> ctx_embed
@@ -50,35 +51,63 @@ defmodule Alice.Cmd.Currency do
     user = ctx["author"]
     lang = ctx["channel_id"] |> Alice.Cache.channel_to_guild_id 
                              |> Alice.Database.get_language
-    {:ok, last_time} = Alice.Database.get_last_daily user
+    last_time = Alice.Database.get_last_daily user
     last_time = unless is_nil last_time do
-                  Timex.parse(last_time, "{ISO:Extended}")
+                  {:ok, time} = Timex.parse(last_time, "{ISO:Extended}")
+                  time
                 else
-                  Timex.epoch()
+                  Timex.epoch() |> Timex.to_datetime
                 end
-
-    now = today()
+    now = now()
     then = tomorrow()
     diff = Timex.diff now, last_time, :days
 
-    if diff == 1 or Timex.day(now) - Timex.day(last_time) == 1 do
-      _new_user = Alice.Database.increment_balance user, @daily_amount
+    if diff >= 1 do #or Timex.day(now) - Timex.day(last_time) == 1 do
+      # Get streak
+      streak = Alice.Database.get_currency_daily_streak user
+      # Check for reset or nah
+      streak = if diff > 1 and not (streak == 0) do
+                Alice.Database.set_currency_daily_streak user, 0
+                0
+              else
+                Alice.Database.incr_currency_daily_streak user
+                streak + 1
+              end
+      streak_reset = streak == 0
+
+      bonus_amount = if streak_reset do
+                        0
+                      else
+                        @daily_bonus * streak
+                      end
+
+      final_amount = @daily_amount + bonus_amount
+      _new_user = Alice.Database.increment_balance user, final_amount
       #Redis.q ["SET", "user:#{user["id"]}:daily-cooldown", now]
-      Alice.Database.set_last_daily user, Timex.format(last_time, "{ISO:Extended}")
+      Alice.Database.set_last_daily user, Timex.format!(now, "{ISO:Extended}")
       res = Alice.I18n.translate(lang, "command.currency.daily.success")
             |> String.replace("$amount", "#{inspect @daily_amount}")
             |> String.replace("$symbol", @symbol)
+      streak_msg = if streak_reset do
+                    Alice.I18n.translate(lang, "command.currency.daily.streak.reset")
+                    |> String.replace("$symbol", @symbol)
+                  else
+                    Alice.I18n.translate(lang, "command.currency.daily.streak.streak")
+                    |> String.replace("$amount", "#{bonus_amount}")
+                    |> String.replace("$symbol", @symbol)
+                    |> String.replace("$streak", "#{streak}")
+                  end
       ctx
       |> ctx_embed
       |> title("Daily")
-      |> desc(res)
+      |> desc(res <> "\n" <> streak_msg)
       |> Emily.create_message(ctx["channel_id"])
     else
       #time_left = (last_time + @day_s) - now
       #duration = Duration.from_seconds time_left
       duration = Timex.diff then, Timex.now(), :seconds
       res = Alice.I18n.translate(lang, "command.currency.daily.failure")
-            |> String.replace("$time", "#{Timex.format_duration duration, :humanized}")
+            |> String.replace("$time", "#{Duration.from_seconds(duration) |> Timex.format_duration(:humanized)}")
       Emily.n_create_message ctx["channel_id"], [content: nil, embed: error(ctx, res)]
     end
   end
