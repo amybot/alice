@@ -11,6 +11,7 @@ message:
   #         "arg1, arg2, arg3"
   missing-arg: "El comando $command requiere los siguientes argumentos: $args"
   no-nsfw: "No puedes usar un comando NSFW es un un canal que no está marcado como NSFW!"
+  ratelimited: "<:xmark:392356116102774786> ¡Estás haciendo eso muy rápido! Intentalo denuevo en unos segundos."
 
 # Command i18n
 command:
@@ -41,10 +42,12 @@ command:
       catgirl: "Consigue una imagen aleatoria de mujer-gato. La opción NSFW sólo funciona en canales marcados como NSFW."
       rubeface: "Ve un meme de RWBY."
       fatsquare: "Es gordo. Es un cuadrado. Es el mejor emoticón de todos los tiempos."
+      e: "¡Muestra un emoji desde *cualquier* servidor en el chat!"
     util:
       ping: "pong! Revisa si amybot está respondiendo."
       help: "Información valiosa de amybot."
       invite: "Consigue el link para invitar a amybot a tú servidor."
+      lang: "Cambia el idioma que se muestra en amybot."
     currency:
       balance: "Revisa tu saldo o el de otras personas."
       daily: "Consigue algo de dinero una vez al día."
@@ -72,12 +75,61 @@ command:
     # Available parameters:
     # $balance - the user's balance
     # $symbol  - the currency symbol
-    balance: "Tienes $symbol$balance."
+    balance: "<:check:392356124961013762> Tienes $symbol$balance."
     daily:
       # Available parameters:
       # $amount - amount collected daily
-      # $symbol  - the currency symbol
-      success: "Conseguiste tus $symbol$amount créditos diarios."
+      # $symbol - the currency symbol
+      success: "<:check:392356124961013762> Recoges tus $symbol$amount créditos diarios."
       # Available parameters:
       # $time - formatting time string until it's possible again
-      failure: "Estás haciendo esto muy rapido! Intentalo denuevo en $time."
+      failure: "<:xmark:392356116102774786> ¡Vas muy rápido! Intentalo denuevo en $time."
+      streak:
+        reset: "Tu streak se ha reseteado porque no has recolectado $symbol en un tiempo."
+        # Available parameters:
+        # $amount - amount collected daily
+        # $symbol - the currency symbol
+        # $streak - how long the player's streak is
+        streak: "¡Haz ganado un bonus de $symbol$amount por tener un streak de $streak! ¡Increible!"
+    pay:
+      # Available parameters:
+      # $amount - the invalid amount
+      failure-bad-amount: "<:xmark:392356116102774786> ¡'$amount' no es un número valido!"
+      failure-too-poor: "<:xmark:392356116102774786> ¡No tienes suficiente dinero para eso!"
+      # Available parameters:
+      # $amount - the amount of money to send
+      # $target - the person recv.ing the money
+      success: "<:check:392356124961013762> Enviaste $amount a $target."
+  music:
+    join:
+      # Available parameters:
+      # $channel - name of the channel that was joined.
+      success: "<:check:392356124961013762> Conectado correctamente a $channel!"
+      failure: 
+        user-not-in-voice: "<:xmark:392356116102774786> ¡No estás en un canal de voz! Si esto es incorrecto, intenta salir y entrar al canal de voz."
+        bot-in-same-voice: "<:xmark:392356116102774786> ¡Ya me encuentro en ese canal!"
+        bot-already-in-voice: "<:xmark:392356116102774786> ¡Ya estoy en un canal!"
+    leave:
+      success: "<:check:392356124961013762> Salí correctamente de $channel!"
+      failure:
+        user-not-in-voice: "<:xmark:392356116102774786> ¡No estás en un canal de voz! Si esto es incorrecto, intenta salir y entrar al canal de voz."
+        bot-not-in-channel: "<:xmark:392356116102774786> ¡No estoy en ningún canal!"
+        bot-in-different-channel: "<:xmark:392356116102774786> ¡Estoy en un canal de voz distinto!"
+    skip:
+      failure:
+        # Available parameters: 
+        # $amount - The (invalid) amount of songs to skip
+        invalid-number: "<:xmark:392356116102774786> ¡'$amount' no es un número valido!"
+      # Available parameters: 
+      # $amount - The (valid) amount of songs to skip
+      success: "<:check:392356124961013762> Saltadas $amount canciones"
+    queue:
+      # Available parameters:
+      # $length - Queue length
+      length: "<:check:392356124961013762> Duración de la cola: $length canciones."
+      success: "<:check:392356124961013762> ¡Añadido correctamente a la cola!"
+      failure: "<:xmark:392356116102774786> No pude añadir eso a la cola."
+    radio:
+      station-changed: "<:check:392356124961013762> Estación de radio cambiada a: $stationName"
+      failure-no-args: "<:xmark:392356116102774786> ¡No puedes buscar por nada!"
+      failure-no-station: "<:xmark:392356116102774786> No hay una estación conforme a tu criterio de búsqueda."
